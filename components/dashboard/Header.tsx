@@ -18,13 +18,13 @@ export default function Header() {
   };
   
   return (
-    <header className="bg-white shadow-sm h-16 flex items-center px-6">
+    <header className="bg-white shadow-sm h-16 flex items-center px-3 md:px-6">
       <div className="flex-1">
         <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
       </div>
       
       {/* Barra de búsqueda */}
-      <div className="mx-4 relative w-64">
+      <div className="mx-2 md:mx-4 relative w-full md:w-64 max-w-[200px] md:max-w-none">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <FiSearch className="h-5 w-5 text-gray-400" />
         </div>
@@ -50,7 +50,7 @@ export default function Header() {
         
         {/* Panel de notificaciones */}
         {isNotificationsOpen && (
-          <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+          <div className="origin-top-right absolute right-0 mt-2 w-[calc(100vw-2rem)] md:w-80 max-w-sm rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
             <div className="py-2 px-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-gray-900">Notificaciones</h3>
@@ -134,7 +134,7 @@ export default function Header() {
         
         {/* Menú desplegable del perfil */}
         {isProfileOpen && (
-          <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+          <div className="origin-top-right absolute right-0 mt-2 w-[calc(100vw-2rem)] md:w-48 max-w-xs rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
             <div className="py-1">
               <a
                 href="/dashboard/perfil"
