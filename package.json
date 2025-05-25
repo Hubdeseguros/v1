@@ -8,27 +8,45 @@
     "start": "next start",
     "lint": "next lint",
     "export": "next build",
-    "deploy": "gh-pages -d out"
+    "deploy": "gh-pages -d out",
+    "analyze": "ANALYZE=true next build",
+    "analyze:server": "ANALYZE=true next build --debug",
+    "analyze:build": "cross-env ANALYZE=true next build"
   },
   "homepage": "https://hubdeseguros.github.io/v1",
-
   "dependencies": {
-    "gh-pages": "^6.3.0",
-    "autoprefixer": "^10.0.1",
+    "@next/bundle-analyzer": "^14.0.4",
+    "autoprefixer": "^10.4.16",
     "next": "^14.0.4",
-    "postcss": "^8",
+    "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
-    "tailwindcss": "^3.3.0"
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
+    "critters": "^0.0.23",
+    "cross-env": "^7.0.3",
     "eslint": "^8.55.0",
     "eslint-config-next": "^14.0.4",
-    "gh-pages": "^6.3.0",
+    "gh-pages": "^6.1.1",
+    "tailwindcss": "^3.3.6",
     "typescript": "^5.3.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
