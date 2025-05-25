@@ -202,17 +202,6 @@ export default function Sidebar() {
                   {item.icon}
                   <span className="ml-3">{item.name}</span>
                 </div>
-                {item.subItems && (
-                  <svg
-                    className={`w-4 h-4 transition-transform ${activeMenu === item.name ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                )}
               </button>
               
               {/* Submenús */}
@@ -252,15 +241,6 @@ export default function Sidebar() {
                     {item.icon}
                     <span className="ml-3">{item.name}</span>
                   </div>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${activeMenu === item.name ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
                 </button>
                 
                 {/* Submenús */}
