@@ -1,7 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   FiHome, FiUsers, FiFileText, FiAlertTriangle, FiDollarSign, 
   FiPieChart, FiFolder, FiSend, FiSettings, FiBarChart2,
@@ -170,6 +171,53 @@ const specialMenuItems: MenuItem[] = [
 
 export default function Sidebar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const router = useRouter();
+  const clickTimers = useRef<{[key: string]: NodeJS.Timeout | null}>({});
+  const clickCounts = useRef<{[key: string]: number}>({});
+  
+  // Función para manejar los clics en los elementos del menú
+  const handleMenuItemClick = (item: MenuItem) => {
+    const itemName = item.name;
+    
+    // Incrementar el contador de clics para este elemento
+    clickCounts.current[itemName] = (clickCounts.current[itemName] || 0) + 1;
+    
+    // Si ya hay un temporizador activo para este elemento, lo limpiamos
+    if (clickTimers.current[itemName]) {
+      clearTimeout(clickTimers.current[itemName]!);
+    }
+    
+    // Configurar un nuevo temporizador
+    clickTimers.current[itemName] = setTimeout(() => {
+      // Si hubo un solo clic, navegar al dashboard del ítem
+      if (clickCounts.current[itemName] === 1) {
+        if (item.subItems && item.subItems.length > 0) {
+          router.push(item.href);
+        } else {
+          router.push(item.href);
+        }
+      } 
+      // Si hubo doble clic, expandir/contraer el submenú
+      else if (clickCounts.current[itemName] >= 2) {
+        toggleMenu(itemName);
+      }
+      
+      // Reiniciar el contador de clics
+      clickCounts.current[itemName] = 0;
+      clickTimers.current[itemName] = null;
+    }, 250); // 250ms es un tiempo razonable para detectar doble clic
+  };
+  
+  // Limpiar los temporizadores al desmontar el componente
+  useEffect(() => {
+    return () => {
+      Object.keys(clickTimers.current).forEach(key => {
+        if (clickTimers.current[key]) {
+          clearTimeout(clickTimers.current[key]!);
+        }
+      });
+    };
+  }, []);
   
   const toggleMenu = (menuName: string) => {
     setActiveMenu(activeMenu === menuName ? null : menuName);
@@ -193,7 +241,7 @@ export default function Sidebar() {
           {mainMenuItems.map((item) => (
             <li key={item.name}>
               <button
-                onClick={() => toggleMenu(item.name)}
+                onClick={() => handleMenuItemClick(item)}
                 className={`flex items-center justify-between w-full p-2 rounded-md transition-colors ${
                   activeMenu === item.name ? 'bg-secondary text-white' : 'text-gray-300 hover:bg-secondary/50'
                 }`}
@@ -232,7 +280,7 @@ export default function Sidebar() {
             {specialMenuItems.map((item) => (
               <li key={item.name}>
                 <button
-                  onClick={() => toggleMenu(item.name)}
+                  onClick={() => handleMenuItemClick(item)}
                   className={`flex items-center justify-between w-full p-2 rounded-md transition-colors ${
                     activeMenu === item.name ? 'bg-secondary text-white' : 'text-gray-300 hover:bg-secondary/50'
                   }`}
