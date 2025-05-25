@@ -1,17 +1,14 @@
 /** @type {import('next').NextConfig} */
-const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
-
-const repo = 'hubseguros';
-const assetPrefix = isGithubActions ? `/${repo}/` : '';
-const basePath = isGithubActions ? `/${repo}` : '';
+const isProd = process.env.NODE_ENV === 'production'
+const repo = 'v1' // Nombre de tu repositorio
 
 const nextConfig = {
   output: 'export',
+  basePath: isProd ? `/${repo}` : '',
+  assetPrefix: isProd ? `/${repo}/` : '',
   images: {
     unoptimized: true,
   },
-  basePath: basePath,
-  assetPrefix: assetPrefix,
   trailingSlash: true,
 }
 

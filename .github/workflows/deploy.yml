@@ -3,35 +3,29 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        
-      - name: Set up Node.js
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
-          
-      - name: Install dependencies
-        run: |
-          npm install
-          
+      
+      - name: Install Dependencies
+        run: npm ci
+      
       - name: Build
         run: |
           npm run build
           touch out/.nojekyll
-          
+      
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: out
-          CLEAN: true
+          folder: out
+          branch: gh-pages
