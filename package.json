@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export -o out && touch out/.nojekyll",
+    "build": "next build && touch out/.nojekyll",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build && next export -o out",
+    "export": "next build",
     "deploy": "gh-pages -d out"
   },
   "homepage": "https://hubdeseguros.github.io/v1",
+
   "dependencies": {
     "gh-pages": "^6.3.0",
     "autoprefixer": "^10.0.1",
