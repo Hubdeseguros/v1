@@ -1,12 +1,17 @@
 /** @type {import('next').NextConfig} */
+const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+
+const repo = 'hubseguros';
+const assetPrefix = isGithubActions ? `/${repo}/` : '';
+const basePath = isGithubActions ? `/${repo}` : '';
+
 const nextConfig = {
   output: 'export',
   images: {
     unoptimized: true,
   },
-  // Configuración para GitHub Pages
-  basePath: '/v1',
-  assetPrefix: '/v1/',
+  basePath: basePath,
+  assetPrefix: assetPrefix,
   trailingSlash: true,
 }
 

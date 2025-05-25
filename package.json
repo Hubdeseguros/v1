@@ -7,12 +7,15 @@
     "build": "next build && touch out/.nojekyll",
     "start": "next start",
     "lint": "next lint",
+    "export": "next build",
     "deploy": "gh-pages -d out"
   },
+  "homepage": "https://[TU_USUARIO].github.io/hubseguros/",
   "dependencies": {
+    "gh-pages": "^6.3.0",
     "autoprefixer": "^10.0.1",
     "next": "^14.0.4",
-    "postcss": "^8.4.31",
+    "postcss": "^8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
