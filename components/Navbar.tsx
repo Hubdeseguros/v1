@@ -13,24 +13,7 @@ const Navbar = () => {
         </Link>
         
         <div className="hidden md:flex space-x-8">
-          <Link href="/" className="nav-link nav-link-active">
-            Inicio
-          </Link>
-          <Link href="/dashboard" className="nav-link">
-            Dashboard
-          </Link>
-          <Link href="/clientes" className="nav-link">
-            Clientes
-          </Link>
-          <Link href="/polizas" className="nav-link">
-            Pólizas
-          </Link>
-          <Link href="/siniestros" className="nav-link">
-            Siniestros
-          </Link>
-          <Link href="/mi-perfil" className="nav-link">
-            Mi Perfil
-          </Link>
+          {/* Elementos de navegación eliminados según solicitud */}
         </div>
         
         <div className="flex items-center space-x-4">
