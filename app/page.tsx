@@ -4,6 +4,7 @@ import Features from '@/components/Features';
 import Solutions from '@/components/Solutions';
 import Modules from '@/components/Modules';
 import Footer from '@/components/Footer';
+import WhatsAppButton from '@/components/ui/WhatsAppButton';
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <Solutions />
         <Modules />
         <Footer />
+        <WhatsAppButton />
       </div>
     </main>
   );
