@@ -1,22 +1,80 @@
 # HubSeguros
 
-HubSeguros es una plataforma web SAAS que simplifica el trabajo de agentes de seguros, permitiéndoles gestionar clientes, pólizas y siniestros en un solo lugar.
+HubSeguros es una plataforma SAAS B2B diseñada específicamente para el sector asegurador, con el objetivo de optimizar las operaciones y aumentar las ventas mediante la automatización y organización de procesos.
 
 ## Características principales
 
-- **Multirol**: Diferentes niveles de acceso para agentes, promotores y administradores de agencias
-- **Dashboard interactivo**: Visualización de KPIs y métricas importantes
-- **Gestión de clientes**: CRM completo para seguimiento de clientes y oportunidades
-- **Gestión de pólizas**: Control centralizado de todas las pólizas
-- **Seguimiento de siniestros**: Gestión completa del ciclo de vida de siniestros
-- **Cobros y pagos**: Control financiero de la operación
-- **Reportes y análisis**: Informes detallados para toma de decisiones
+- **Sistema Multirol**: 
+  - SUPERADMIN: Control total del sistema
+  - ADMIN: Gestión de usuarios y roles
+  - AGENCIA: Gestión completa de la agencia
+  - PROMOTOR: Gestión de equipos y ventas
+  - CLIENTE: Acceso limitado a información personal
+
+- **Módulos Principales**:
+  - CRM Integrado
+  - Gestión de Pólizas
+  - Control de Siniestros
+  - Dashboard Analítico
+  - Sistema de Cobros
+  - Gestión de Usuarios
+
+- **Funcionalidades**:
+  - Gestión completa de clientes
+  - Emisión y renovación de pólizas
+  - Seguimiento de siniestros
+  - Reportes y análisis
+  - Automatización de procesos
+  - Gestión financiera
 
 ## Tecnologías utilizadas
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
 - **Autenticación**: JWT (simulada para demo)
 - **Despliegue**: GitHub Pages
+
+## Arquitectura del Sistema
+
+### Roles del Sistema
+
+- **SUPERADMIN**: Control total del sistema
+- **ADMIN**: Gestión de usuarios y roles
+- **AGENCIA**: Gestión completa de la agencia
+- **PROMOTOR**: Gestión de equipos y ventas
+- **CLIENTE**: Acceso limitado a información personal
+
+### Módulos Principales
+
+1. **CRM Integrado**
+   - Gestión de clientes
+   - Seguimiento de interacciones
+   - Historial completo
+
+2. **Gestión de Pólizas**
+   - Emisión de pólizas
+   - Renovaciones
+   - Vencimientos
+   - Seguimiento
+
+3. **Control de Siniestros**
+   - Gestión documental
+   - Seguimiento en tiempo real
+   - Comunicación con aseguradoras
+
+4. **Dashboard Analítico**
+   - KPIs importantes
+   - Seguimiento de objetivos
+   - Informes avanzados
+
+5. **Sistema de Cobros**
+   - Gestión financiera
+   - Liquidaciones
+   - Pagos y recibos
+
+6. **Gestión de Usuarios**
+   - Roles y permisos
+   - Control de acceso
+   - Seguridad
 
 ## Estructura del proyecto
 
