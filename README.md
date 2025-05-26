@@ -4,13 +4,6 @@ HubSeguros es una plataforma SAAS B2B diseñada específicamente para el sector 
 
 ## Características principales
 
-- **Sistema Multirol**: 
-  - SUPERADMIN: Control total del sistema
-  - ADMIN: Gestión de usuarios y roles
-  - AGENCIA: Gestión completa de la agencia
-  - PROMOTOR: Gestión de equipos y ventas
-  - CLIENTE: Acceso limitado a información personal
-
 - **Módulos Principales**:
   - CRM Integrado
   - Gestión de Pólizas
