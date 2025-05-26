@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMobileMenu } from '@/context/MobileMenuContext';
 import { 
   FiHome, FiUsers, FiFileText, FiAlertTriangle, FiDollarSign, 
   FiPieChart, FiFolder, FiSend, FiSettings, FiBarChart2,
@@ -172,6 +173,7 @@ const specialMenuItems: MenuItem[] = [
 export default function Sidebar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const router = useRouter();
+  const { toggleMenu: toggleMobileMenu } = useMobileMenu();
   const clickTimers = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const clickCounts = useRef<{[key: string]: number}>({});
   
@@ -195,6 +197,11 @@ export default function Sidebar() {
           router.push(item.href);
         } else {
           router.push(item.href);
+        }
+        
+        // Cerrar el menú en dispositivos móviles
+        if (window.innerWidth < 768) {
+          toggleMobileMenu(false);
         }
       } 
       // Si hubo doble clic, expandir/contraer el submenú
@@ -221,6 +228,11 @@ export default function Sidebar() {
   
   const toggleMenu = (menuName: string) => {
     setActiveMenu(activeMenu === menuName ? null : menuName);
+    
+    // Si estamos en móvil y el menú está abierto, no permitir cerrar el submenú al hacer clic en el mismo ítem
+    if (window.innerWidth < 768 && activeMenu === menuName) {
+      toggleMobileMenu(false);
+    }
   };
   
   return (
@@ -298,6 +310,11 @@ export default function Sidebar() {
                       <li key={subItem.name}>
                         <Link
                           href={subItem.href}
+                          onClick={() => {
+                            if (window.innerWidth < 768) {
+                              toggleMobileMenu(false);
+                            }
+                          }}
                           className="block p-2 text-sm text-gray-300 hover:text-white hover:bg-secondary/30 rounded-md transition-colors"
                         >
                           {subItem.name}
@@ -316,6 +333,11 @@ export default function Sidebar() {
       <div className="p-4 border-t border-gray-700">
         <Link 
           href="/login" 
+          onClick={() => {
+            if (window.innerWidth < 768) {
+              toggleMobileMenu(false);
+            }
+          }}
           className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors"
         >
           <FiLogOut className="w-5 h-5" />

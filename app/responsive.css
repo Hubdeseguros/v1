@@ -1,72 +1,4 @@
-/* Estilos responsivos para mejorar la adaptación a dispositivos móviles */
-
-@media (max-width: 768px) {
-  /* Ajustes para el Sidebar en móviles */
-  .bg-primary.text-white.h-screen.w-64 {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 50;
-    width: 85%;
-    max-width: 280px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  /* Clase para mostrar el sidebar cuando está activo */
-  .sidebar-mobile-active .bg-primary.text-white.h-screen.w-64 {
-    transform: translateX(0);
-  }
-  
-  /* Overlay para cuando el sidebar está activo */
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 40;
-  }
-  
-  .sidebar-mobile-active .sidebar-overlay {
-    display: block;
-  }
-  
-  /* Botón de hamburguesa para mostrar/ocultar el sidebar */
-  .mobile-menu-button {
-    display: block;
-    position: fixed;
-    top: 0.75rem;
-    left: 0.75rem;
-    z-index: 60;
-    padding: 0.5rem;
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 0.375rem;
-  }
-  
-  /* Ajustes para el contenido principal */
-  .flex-1.flex.flex-col.overflow-hidden {
-    margin-top: 1rem;
-    padding-left: 0;
-  }
-  
-  /* Ajustes para los elementos del menú */
-  .flex.items-center span {
-    font-size: 0.875rem;
-  }
-  
-  /* Mejoras para la visualización de tablas y contenido ancho */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  
-  /* Ajustes para inputs y formularios */
-  input, select, textarea {
-    font-size: 16px !important; /* Evita el zoom automático en iOS */
-  }
-}
+/* Estilos responsivos optimizados para móviles */
 
 /* Variables CSS para colores consistentes */
 :root {
@@ -74,15 +6,149 @@
   --secondary-color: #19376D;
   --accent-color: #4682B4;
   --light-color: #F8FAFC;
+  --sidebar-width: 280px;
+  --sidebar-transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
 }
 
-/* Mejoras de rendimiento generales */
+/* Reset de estilos para mejorar el rendimiento */
 * {
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
 }
 
+/* Optimización de imágenes y SVG */
 img, svg {
   content-visibility: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+  /* Sidebar en móviles */
+  .bg-primary.text-white.h-screen.w-64 {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 85%;
+    max-width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: var(--sidebar-transition);
+    will-change: transform;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Estado activo del sidebar */
+  .sidebar-mobile-active .bg-primary.text-white.h-screen.w-64 {
+    transform: translateX(0);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Overlay para el fondo */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--overlay-bg);
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+    will-change: opacity;
+    backdrop-filter: blur(2px);
+  }
+  
+  .sidebar-mobile-active .sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* Botón del menú móvil */
+  .mobile-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 60;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    touch-action: manipulation;
+  }
+  
+  .mobile-menu-button:active {
+    transform: scale(0.95);
+  }
+  
+  /* Contenido principal */
+  .flex-1.flex.flex-col.overflow-hidden {
+    margin-top: 1rem;
+    padding-left: 0;
+    min-height: 100vh;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Ajustes para el contenido cuando el menú está abierto */
+  .sidebar-mobile-active .flex-1.flex.flex-col.overflow-hidden {
+    transform: translateX(calc(var(--sidebar-width) * 0.85));
+  }
+  
+  /* Mejoras para tablas */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    border-collapse: collapse;
+  }
+  
+  /* Mejoras para formularios */
+  input, select, textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+  
+  /* Ajustes de tipografía para móviles */
+  html {
+    font-size: 16px;
+  }
+  
+  /* Mejoras de rendimiento para animaciones */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Estilos para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bg-primary.text-white.h-screen.w-64 {
+    width: 250px;
+  }
 }
 
 /* Mejoras de accesibilidad */
@@ -92,5 +158,30 @@ img, svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  .sidebar-overlay {
+    transition: none !important;
+  }
+  
+  .bg-primary.text-white.h-screen.w-64 {
+    transition: none !important;
+  }
+}
+
+/* Optimizaciones para iOS */
+@supports (-webkit-touch-callout: none) {
+  input, textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Evitar zoom en iOS al hacer doble toque */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  textarea {
+    font-size: 16px !important;
   }
 }

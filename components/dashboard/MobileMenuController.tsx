@@ -1,76 +1,136 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
+import { useMobileMenu } from '@/context/MobileMenuContext';
 
 export default function MobileMenuController() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, toggleMenu: toggleSidebar } = useMobileMenu();
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const touchStartTime = useRef(0);
   
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  // Manejar gestos táctiles
+  const handleTouchStart = (e: TouchEvent) => {
+    if (!isSidebarOpen) return;
+    touchStartTime.current = e.timeStamp;
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isSidebarOpen) return;
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isSidebarOpen) return;
     
-    // Añadir o quitar la clase del body para controlar el sidebar
-    if (!isSidebarOpen) {
-      document.body.classList.add('sidebar-mobile-active');
-    } else {
-      document.body.classList.remove('sidebar-mobile-active');
+    const touchDuration = Date.now() - touchStartTime.current;
+    const swipeDistance = touchStart - touchEnd;
+    const isSwipe = touchDuration < 300 && Math.abs(swipeDistance) > 50;
+    
+    if (isSwipe && swipeDistance > 0) {
+      toggleSidebar(false);
     }
   };
   
-  // Cerrar el sidebar cuando se hace clic en un enlace
+  // Cerrar el sidebar cuando se hace clic en un enlace o fuera
   useEffect(() => {
-    const handleLinkClick = () => {
-      if (isSidebarOpen && window.innerWidth < 768) {
-        setIsSidebarOpen(false);
-        document.body.classList.remove('sidebar-mobile-active');
+    if (typeof document === 'undefined' || typeof window === 'undefined') {
+      return;
+    }
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const isSidebar = target.closest('.bg-primary.text-white.h-screen.w-64');
+      const isMenuButton = target.closest('.mobile-menu-button');
+      
+      if (isSidebarOpen && !isSidebar && !isMenuButton) {
+        toggleSidebar(false);
       }
     };
     
-    // Añadir listener a todos los enlaces dentro del sidebar
-    const sidebarLinks = document.querySelectorAll('.bg-primary.text-white.h-screen.w-64 a');
-    sidebarLinks.forEach(link => {
-      link.addEventListener('click', handleLinkClick);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSidebarOpen) {
+        toggleSidebar(false);
+      }
+    };
+    
+    // Añadir event listeners para gestos táctiles
+    const sidebar = document.querySelector('.bg-primary.text-white.h-screen.w-64');
+    if (sidebar) {
+      sidebar.addEventListener('touchstart', handleTouchStart as EventListener);
+      sidebar.addEventListener('touchmove', handleTouchMove as EventListener);
+      sidebar.addEventListener('touchend', handleTouchEnd);
+    }
+    
+    // Cerrar el menú al hacer clic en cualquier enlace
+    const closeOnLinkClick = () => {
+      if (window.innerWidth < 768) { // Solo en móviles
+        toggleSidebar(false);
+      }
+    };
+    
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      link.addEventListener('click', closeOnLinkClick);
     });
     
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
     return () => {
-      sidebarLinks.forEach(link => {
-        link.removeEventListener('click', handleLinkClick);
+      if (sidebar) {
+        sidebar.removeEventListener('touchstart', handleTouchStart as EventListener);
+        sidebar.removeEventListener('touchmove', handleTouchMove as EventListener);
+        sidebar.removeEventListener('touchend', handleTouchEnd);
+      }
+      
+      links.forEach(link => {
+        link.removeEventListener('click', closeOnLinkClick);
       });
+      
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = ''; // Asegurarse de restaurar el scroll
     };
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, toggleSidebar]);
   
-  // Cerrar el sidebar cuando se redimensiona la ventana a un tamaño de escritorio
+  // Cerrar el sidebar en cambio de tamaño de pantalla
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768 && isSidebarOpen) {
-        setIsSidebarOpen(false);
-        document.body.classList.remove('sidebar-mobile-active');
+        toggleSidebar(false);
       }
     };
     
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, [isSidebarOpen]);
   
   return (
     <>
-      {/* Botón de hamburguesa para móvil */}
       <button 
-        onClick={toggleSidebar}
+        onClick={() => toggleSidebar(!isSidebarOpen)}
         className="mobile-menu-button md:hidden"
-        aria-label="Abrir menú"
+        aria-label={isSidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+        aria-expanded={isSidebarOpen}
+        aria-controls="sidebar-navigation"
       >
         {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
       
-      {/* Overlay para cerrar el sidebar al hacer clic fuera */}
       <div 
         className="sidebar-overlay" 
-        onClick={toggleSidebar}
-        aria-hidden="true"
-      ></div>
+        onClick={() => toggleSidebar(false)}
+        aria-hidden={!isSidebarOpen}
+        style={{
+          opacity: isSidebarOpen ? 1 : 0,
+          pointerEvents: isSidebarOpen ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease-in-out'
+        }}
+      />
     </>
   );
 }
