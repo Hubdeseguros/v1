@@ -44,6 +44,7 @@ const mainMenuItems: MenuItem[] = [
     href: '/dashboard/polizas',
     subItems: [
       { name: 'Listado de Pólizas', href: '/dashboard/polizas', description: 'Gestiona todas tus pólizas' },
+      { name: 'Cotizaciones', href: '/dashboard/polizas/cotizaciones', description: 'Gestiona tus cotizaciones' },
       { name: 'Cumplimiento', href: '/dashboard/polizas/cumplimiento', description: 'Pólizas de cumplimiento' },
       { name: 'Judicial', href: '/dashboard/polizas/judicial', description: 'Pólizas judiciales' },
     ]
@@ -150,27 +151,25 @@ const specialMenuItems: MenuItem[] = [
     ]
   },
   {
-    name: 'Configuración Agencia',
+    name: 'Configuración Promotor',
     icon: <FiSliders className="w-5 h-5" />,
     href: '/dashboard/configuracion',
     subItems: [
-      { name: 'Usuarios', href: '/dashboard/configuracion/usuarios', description: 'Gestión de usuarios' },
-      { name: 'Información de agencia', href: '/dashboard/configuracion/agencia', description: 'Datos generales' },
-      { name: 'Sedes', href: '/dashboard/configuracion/sedes', description: 'Administración de sucursales' },
-      { name: 'Aseguradoras', href: '/dashboard/configuracion/aseguradoras', description: 'Catálogo de compañías' },
-      { name: 'Ramos', href: '/dashboard/configuracion/ramos', description: 'Tipos de seguros' },
-      { name: 'Vendedores', href: '/dashboard/configuracion/vendedores', description: 'Equipo comercial' },
-      { name: 'Estados Siniestros', href: '/dashboard/configuracion/estados-siniestros', description: 'Configuración de estados' },
-      { name: 'Estados ARL', href: '/dashboard/configuracion/estados-arl', description: 'Estados específicos ARL' },
-      { name: 'Motivos estados póliza', href: '/dashboard/configuracion/motivos-poliza', description: 'Razones de cambio de estado' },
-      { name: 'Tipo afiliación', href: '/dashboard/configuracion/tipos-afiliacion', description: 'Categorías de afiliación' },
-      { name: 'Mensajeros', href: '/dashboard/configuracion/mensajeros', description: 'Equipo de mensajería' },
-      { name: 'Coberturas', href: '/dashboard/configuracion/coberturas', description: 'Catálogo de protecciones' },
+      { name: 'Perfil', href: '/dashboard/configuracion/perfil', description: 'Mi perfil de promotor' },
+      { name: 'Preferencias', href: '/dashboard/configuracion/preferencias', description: 'Configuración personal' },
+      { name: 'Clientes', href: '/dashboard/configuracion/clientes', description: 'Gestión de clientes' },
+      { name: 'Plantillas', href: '/dashboard/configuracion/plantillas', description: 'Plantillas de documentos' },
+      { name: 'Notificaciones', href: '/dashboard/configuracion/notificaciones', description: 'Preferencias de notificaciones' },
     ]
   },
 ];
 
-export default function Sidebar() {
+export interface SidebarProps {
+  role?: 'ADMIN' | 'AGENCIA' | 'PROMOTOR' | 'CLIENTE';
+  className?: string;
+}
+
+export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const router = useRouter();
   const { toggleMenu: toggleMobileMenu } = useMobileMenu();
@@ -235,6 +234,21 @@ export default function Sidebar() {
     }
   };
   
+  // Filtrar ítems del menú según el rol
+  const filteredMainMenuItems = mainMenuItems.filter(item => {
+    if (role === 'ADMIN') return true;
+    if (role === 'AGENCIA') return !['Administración'].includes(item.name);
+    if (role === 'PROMOTOR') {
+      return !['Administración', 'Configuración Agencia', 'Importar Plantillas'].includes(item.name);
+    }
+    return false;
+  });
+
+  const filteredSpecialMenuItems = specialMenuItems.filter(item => {
+    if (role === 'ADMIN' || role === 'AGENCIA') return true;
+    return false;
+  });
+
   return (
     <div className="bg-primary text-white h-screen w-64 flex flex-col">
       {/* Logo */}
@@ -246,11 +260,11 @@ export default function Sidebar() {
           </span>
         </Link>
       </div>
-      
+
       {/* Menú principal */}
-      <div className="flex-1 overflow-y-auto py-4 px-3">
-        <ul className="space-y-2">
-          {mainMenuItems.map((item) => (
+      <div className="flex-1 overflow-y-auto py-4">
+        <ul className="space-y-1 px-2">
+          {filteredMainMenuItems.map((item) => (
             <li key={item.name}>
               <button
                 onClick={() => handleMenuItemClick(item)}
@@ -265,12 +279,17 @@ export default function Sidebar() {
               </button>
               
               {/* Submenús */}
-              {item.subItems && activeMenu === item.name && (
-                <ul className="mt-2 ml-6 space-y-1">
-                  {item.subItems.map((subItem) => (
+              {activeMenu === item.name && item.subItems && item.subItems.length > 0 && (
+                <ul className="mt-1 ml-6 space-y-1">
+                  {item.subItems.map((subItem: SubMenuItem) => (
                     <li key={subItem.name}>
                       <Link
                         href={subItem.href}
+                        onClick={() => {
+                          if (window.innerWidth < 768) {
+                            toggleMobileMenu(false);
+                          }
+                        }}
                         className="block p-2 text-sm text-gray-300 hover:text-white hover:bg-secondary/30 rounded-md transition-colors"
                       >
                         {subItem.name}
@@ -282,62 +301,57 @@ export default function Sidebar() {
             </li>
           ))}
         </ul>
-        
-        {/* Sección especial */}
-        <div className="mt-8">
-          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Herramientas avanzadas
-          </p>
-          <ul className="space-y-2">
-            {specialMenuItems.map((item) => (
-              <li key={item.name}>
-                <button
-                  onClick={() => handleMenuItemClick(item)}
-                  className={`flex items-center justify-between w-full p-2 rounded-md transition-colors ${
-                    activeMenu === item.name ? 'bg-secondary text-white' : 'text-gray-300 hover:bg-secondary/50'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    <span className="ml-3">{item.name}</span>
-                  </div>
-                </button>
-                
-                {/* Submenús */}
-                {activeMenu === item.name && (
-                  <ul className="mt-2 ml-6 space-y-1">
-                    {item.subItems?.map((subItem) => (
-                      <li key={subItem.name}>
-                        <Link
-                          href={subItem.href}
-                          onClick={() => {
-                            if (window.innerWidth < 768) {
-                              toggleMobileMenu(false);
-                            }
-                          }}
-                          className="block p-2 text-sm text-gray-300 hover:text-white hover:bg-secondary/30 rounded-md transition-colors"
-                        >
-                          {subItem.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+
+        {/* Menú especial (solo para ADMIN y AGENCIA) */}
+        {filteredSpecialMenuItems.length > 0 && (
+          <>
+            <div className="border-t border-gray-700 my-4 mx-2"></div>
+            <ul className="space-y-1 px-2">
+              {filteredSpecialMenuItems.map((item) => (
+                <li key={item.name}>
+                  <button
+                    onClick={() => handleMenuItemClick(item)}
+                    className={`flex items-center justify-between w-full p-2 rounded-md transition-colors ${
+                      activeMenu === item.name ? 'bg-secondary text-white' : 'text-gray-300 hover:bg-secondary/50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      {item.icon}
+                      <span className="ml-3">{item.name}</span>
+                    </div>
+                  </button>
+                  
+                  {/* Submenús */}
+                  {activeMenu === item.name && item.subItems && item.subItems.length > 0 && (
+                    <ul className="mt-1 ml-6 space-y-1">
+                      {item.subItems.map((subItem: SubMenuItem) => (
+                        <li key={subItem.name}>
+                          <Link
+                            href={subItem.href}
+                            onClick={() => {
+                              if (window.innerWidth < 768) {
+                                toggleMobileMenu(false);
+                              }
+                            }}
+                            className="block p-2 text-sm text-gray-300 hover:text-white hover:bg-secondary/30 rounded-md transition-colors"
+                          >
+                            {subItem.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
-      
-      {/* Botón de cerrar sesión */}
+
+      {/* Pie de página */}
       <div className="p-4 border-t border-gray-700">
         <Link 
-          href="/login" 
-          onClick={() => {
-            if (window.innerWidth < 768) {
-              toggleMobileMenu(false);
-            }
-          }}
+          href="/logout" 
           className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors"
         >
           <FiLogOut className="w-5 h-5" />

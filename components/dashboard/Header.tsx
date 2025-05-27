@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { FiBell, FiSearch, FiUser, FiSettings, FiHelpCircle, FiLogOut } from 'react-icons/fi';
 
-export default function Header() {
+interface HeaderProps {
+  role?: 'ADMIN' | 'AGENCIA' | 'PROMOTOR' | 'CLIENTE';
+}
+
+export default function Header({ role = 'AGENCIA' }: HeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
@@ -20,7 +24,16 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm h-16 flex items-center px-3 md:px-6">
       <div className="flex-1">
-        <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
+        <h1 className="text-xl font-semibold text-gray-800">
+          {role === 'PROMOTOR' 
+            ? 'Panel de Promotor' 
+            : role === 'ADMIN' 
+              ? 'Panel de Administrador' 
+              : role === 'CLIENTE' 
+                ? 'Mi Cuenta' 
+                : 'Panel de Agencia'
+          }
+        </h1>
       </div>
       
       {/* Barra de búsqueda */}
