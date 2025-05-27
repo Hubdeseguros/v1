@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, config } from '@/lib/supabase'
 
 export async function GET() {
   try {
@@ -34,7 +34,11 @@ export async function GET() {
       data: {
         user: user,
         testQuery: testTableData,
-        authenticated: !!user
+        authenticated: !!user,
+        config: {
+          url: config.url,
+          hasAuth: !!user
+        }
       }
     })
   } catch (error: any) {

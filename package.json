@@ -16,6 +16,7 @@
   "homepage": "https://hubdeseguros.github.io/v1",
   "dependencies": {
     "@next/bundle-analyzer": "^14.0.4",
+    "@supabase/supabase-js": "^2.49.8",
     "autoprefixer": "^10.4.16",
     "next": "^14.0.4",
     "postcss": "^8.4.31",
