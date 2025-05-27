@@ -1,6 +1,26 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+// No se usa AuthContext en este momento
 
 export default function Login() {
+  const router = useRouter();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    // Simular autenticación
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Panel izquierdo */}
@@ -48,7 +68,7 @@ export default function Login() {
             <p className="text-gray-500 text-sm mt-2">Ingresa tus credenciales para acceder a la plataforma</p>
           </div>
           
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
               <input 
@@ -56,6 +76,7 @@ export default function Login() {
                 name="email" 
                 type="email" 
                 defaultValue="admin@admin.com"
+                disabled={loading}
                 autoComplete="email" 
                 required 
                 className="input-field"
@@ -75,6 +96,7 @@ export default function Login() {
                 name="password" 
                 type="password" 
                 defaultValue="admin123"
+                disabled={loading}
                 autoComplete="current-password" 
                 required 
                 className="input-field"
@@ -82,22 +104,20 @@ export default function Login() {
               />
             </div>
             
-            <div className="flex items-center">
-              <input 
-                id="remember-me" 
-                name="remember-me" 
-                type="checkbox" 
-                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" 
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                Recordar sesión
-              </label>
-            </div>
-            
+            {error && (
+              <div className="text-red-500 text-sm mb-4">
+                {error}
+              </div>
+            )}
+
             <div>
-              <Link href="/dashboard" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                Iniciar sesión
-              </Link>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              </button>
             </div>
           </form>
           
