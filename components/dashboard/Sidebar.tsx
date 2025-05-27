@@ -23,6 +23,62 @@ interface MenuItem {
   subItems?: SubMenuItem[];
 }
 
+const clienteMenuItems: MenuItem[] = [
+  {
+    name: 'Inicio',
+    icon: <FiHome className="w-5 h-5" />,
+    href: '/cliente',
+  },
+  {
+    name: 'Mis Pólizas',
+    icon: <FiFileText className="w-5 h-5" />,
+    href: '/cliente/polizas',
+    subItems: [
+      { name: 'Todas mis pólizas', href: '/cliente/polizas', description: 'Consulta tus pólizas activas' },
+      { name: 'Vencimientos', href: '/cliente/polizas/vencimientos', description: 'Próximos vencimientos' },
+      { name: 'Historial', href: '/cliente/polizas/historial', description: 'Historial de pólizas' },
+    ]
+  },
+  {
+    name: 'Cotizaciones',
+    icon: <FiBarChart2 className="w-5 h-5" />,
+    href: '/cliente/cotizaciones',
+    subItems: [
+      { name: 'Nueva cotización', href: '/cliente/cotizaciones/nueva', description: 'Solicitar nueva cotización' },
+      { name: 'Mis solicitudes', href: '/cliente/cotizaciones', description: 'Estado de mis cotizaciones' },
+    ]
+  },
+  {
+    name: 'Pagos',
+    icon: <FiDollarSign className="w-5 h-5" />,
+    href: '/cliente/pagos',
+    subItems: [
+      { name: 'Realizar pago', href: '/cliente/pagos/realizar', description: 'Pagar póliza' },
+      { name: 'Historial de pagos', href: '/cliente/pagos', description: 'Mis transacciones' },
+      { name: 'Métodos de pago', href: '/cliente/pagos/metodos', description: 'Gestionar formas de pago' },
+    ]
+  },
+  {
+    name: 'Siniestros',
+    icon: <FiAlertTriangle className="w-5 h-5" />,
+    href: '/cliente/siniestros',
+    subItems: [
+      { name: 'Reportar siniestro', href: '/cliente/siniestros/reportar', description: 'Nuevo reporte' },
+      { name: 'Mis reportes', href: '/cliente/siniestros', description: 'Seguimiento de siniestros' },
+    ]
+  },
+  {
+    name: 'Documentos',
+    icon: <FiFolder className="w-5 h-5" />,
+    href: '/cliente/documentos',
+    subItems: [
+      { name: 'Mis pólizas', href: '/cliente/documentos/polizas', description: 'Descargar pólizas' },
+      { name: 'Facturas', href: '/cliente/documentos/facturas', description: 'Facturas y recibos' },
+      { name: 'Contratos', href: '/cliente/documentos/contratos', description: 'Documentos legales' },
+    ]
+  },
+];
+
 const mainMenuItems: MenuItem[] = [
   {
     name: 'Inicio',
@@ -234,15 +290,17 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
     }
   };
   
-  // Filtrar ítems del menú según el rol
-  const filteredMainMenuItems = mainMenuItems.filter(item => {
-    if (role === 'ADMIN') return true;
-    if (role === 'AGENCIA') return !['Administración'].includes(item.name);
-    if (role === 'PROMOTOR') {
-      return !['Administración', 'Configuración Agencia', 'Importar Plantillas'].includes(item.name);
-    }
-    return false;
-  });
+  // Filtrar menús según el rol
+  const filteredMainMenu = role === 'CLIENTE' 
+    ? clienteMenuItems 
+    : mainMenuItems.filter(item => {
+        if (role === 'ADMIN') return true;
+        if (role === 'AGENCIA') return !['Administración'].includes(item.name);
+        if (role === 'PROMOTOR') {
+          return ['Inicio', 'Clientes', 'Pólizas', 'Siniestros', 'Cobros'].includes(item.name);
+        }
+        return false;
+      });
 
   const filteredSpecialMenuItems = specialMenuItems.filter(item => {
     if (role === 'ADMIN' || role === 'AGENCIA') return true;
@@ -264,7 +322,7 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
       {/* Menú principal */}
       <div className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-2">
-          {filteredMainMenuItems.map((item) => (
+          {filteredMainMenu.map((item: MenuItem) => (
             <li key={item.name}>
               <button
                 onClick={() => handleMenuItemClick(item)}
