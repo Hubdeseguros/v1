@@ -30,7 +30,7 @@ HubSeguros es una plataforma SAAS B2B diseñada específicamente para el sector 
 
 ### Roles del Sistema
 
- - **ADMIN**: Control total del sistema, Gestión de usuarios y roles
+- **ADMIN**: Control total del sistema
 - **AGENCIA**: Gestión completa de la agencia
 - **PROMOTOR**: Gestión de equipos y ventas
 - **CLIENTE**: Acceso limitado a información personal
