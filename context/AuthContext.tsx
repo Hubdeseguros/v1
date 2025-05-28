@@ -17,8 +17,11 @@ type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  error: string | null;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: { full_name: string }) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -106,17 +110,118 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [pathname, router]);
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || 'Error al iniciar sesión');
+      }
+
+      // Obtener el perfil del usuario después del inicio de sesión exitoso
+      if (data?.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          user_metadata: {
+            full_name: profile?.full_name || '',
+            avatar_url: profile?.avatar_url
+          },
+          role: profile?.role || 'CLIENTE'
+        });
+      }
 
       return { error: null };
     } catch (error: any) {
-      return { error: error.message };
+      const errorMessage = error.message || 'Error al iniciar sesión';
+      setError(errorMessage);
+      return { error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (email: string, password: string, userData: { full_name: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Crear el usuario en Auth
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: userData.full_name,
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      // 2. Crear el perfil del usuario en la base de datos
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              email,
+              full_name: userData.full_name,
+              role: 'CLIENTE', // Rol por defecto
+            },
+          ]);
+
+        if (profileError) throw profileError;
+
+        // Actualizar el estado del usuario
+        setUser({
+          id: authData.user.id,
+          email: authData.user.email || '',
+          user_metadata: {
+            full_name: userData.full_name,
+          },
+          role: 'CLIENTE',
+        });
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Error al registrar el usuario';
+      setError(errorMessage);
+      return { error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Error al enviar el correo de recuperación';
+      setError(errorMessage);
+      return { error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -161,7 +266,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        loading, 
+        error,
+        signIn, 
+        signUp,
+        signOut, 
+        resetPassword 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
