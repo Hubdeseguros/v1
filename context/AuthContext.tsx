@@ -125,10 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 1. Limpiar el estado local primero para una respuesta más rápida
       setUser(null);
       
-      // 2. Intentar cerrar sesión en Supabase
-      await supabase.auth.signOut();
-      
-      // 3. Limpiar almacenamiento local
+      // 2. Limpiar almacenamiento local antes de redirigir
       if (typeof window !== 'undefined') {
         // Limpiar localStorage y sessionStorage
         localStorage.clear();
@@ -137,22 +134,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Limpiar cookies
         document.cookie.split(';').forEach(cookie => {
           const [name] = cookie.trim().split('=');
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
         });
-        
-        // Redirigir a la página de login
-        const basePath = process.env.NODE_ENV === 'production' ? '/v1' : '';
-        const loginUrl = `${window.location.origin}${basePath}/login`;
-        
-        // Usar replace para evitar que el usuario pueda volver atrás
-        window.location.replace(loginUrl);
       }
+      
+      // 3. Intentar cerrar sesión en Supabase (sin esperar la respuesta)
+      supabase.auth.signOut().catch(error => {
+        console.error('Error al cerrar sesión en Supabase:', error);
+      });
+      
+      // 4. Redirigir a la página de login
+      if (typeof window !== 'undefined') {
+        // Usar el router de Next.js para la navegación
+        router.push('/login');
+        // Forzar recarga para limpiar el estado de la aplicación
+        window.location.href = '/login';
+      }
+      
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error('Error en el proceso de cierre de sesión:', error);
       // Asegurar la redirección incluso si hay un error
       if (typeof window !== 'undefined') {
-        const basePath = process.env.NODE_ENV === 'production' ? '/v1' : '';
-        window.location.replace(`${window.location.origin}${basePath}/login`);
+        window.location.href = '/login';
       }
     }
   };
