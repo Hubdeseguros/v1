@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function Registro() {
   const [formData, setFormData] = useState({
@@ -14,60 +13,73 @@ export default function Registro() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const { signUp } = useAuth();
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Evitar que la página parpadee mostrando el formulario si ya está autenticado
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        router.push('/dashboard');
-      }
-    };
-    
-    checkSession();
-  }, [router]);
+  const router = useRouter();
+  const supabase = getSupabaseClient();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const validateForm = useCallback(() => {
+    if (!formData.nombre.trim()) {
+      setError('El nombre es obligatorio');
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError('Por favor ingresa un correo electrónico válido');
+      return false;
+    }
+    if (formData.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return false;
+    }
+    return true;
+  }, [formData]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+    // Limpiar el error cuando el usuario comienza a escribir
+    if (error) setError('');
+  }, [error]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     
-    // Validaciones
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-    
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    if (!validateForm()) return;
     
     try {
       setIsSubmitting(true);
-      const { error } = await signUp(formData.email, formData.password, { full_name: formData.nombre });
       
-      if (error) {
-        throw new Error(error);
-      }
+      // Registrar el usuario en Supabase Auth
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.nombre.trim(),
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (signUpError) throw signUpError;
       
-      // Redirigir a la página de verificación de correo
+      // Redirigir a la página de verificación
       router.push('/verificar-email');
-      return; // Importante: salir de la función después de la redirección
       
     } catch (error: any) {
       console.error('Error en el registro:', error);
-      setError(error.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+      setError(
+        error.message.includes('User already registered') 
+          ? 'Este correo electrónico ya está registrado. Por favor inicia sesión o utiliza otro correo.'
+          : 'Error al registrar el usuario. Por favor, inténtalo de nuevo.'
+      );
     } finally {
       setIsSubmitting(false);
     }

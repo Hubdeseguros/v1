@@ -1,50 +1,88 @@
 'use client';
 
-import Link from 'next/link';
+import { useState, FormEvent, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useState, FormEvent, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
-// Client-side form component
 function LoginForm() {
-  const router = useRouter();
-  const { signIn, error: authError } = useAuth();
-  const [formError, setFormError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = async (e: FormEvent) => {
+  // Evitar hidratación no coincidente
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  const validateForm = useCallback(() => {
+    if (!formData.email.trim()) {
+      setFormError('El correo electrónico es obligatorio');
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setFormError('Por favor ingresa un correo electrónico válido');
+      return false;
+    }
+    if (!formData.password) {
+      setFormError('La contraseña es obligatoria');
+      return false;
+    }
+    return true;
+  }, [formData]);
+
+  const handleSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
     setFormError('');
-    setIsSubmitting(true);
+    
+    if (!validateForm()) return;
     
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      setIsSubmitting(true);
       
-      if (error) {
-        throw new Error(error);
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      if (error) throw error;
       
-      // Redirect to dashboard after successful login using Next.js router
+      // Redirigir al dashboard después del inicio de sesión exitoso
       router.push('/dashboard');
+      
     } catch (error: any) {
       console.error('Error en el inicio de sesión:', error);
-      setFormError(error.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
+      
+      // Manejar errores específicos
+      if (error.message.includes('Invalid login credentials')) {
+        setFormError('Correo o contraseña incorrectos. Por favor, inténtalo de nuevo.');
+      } else if (error.message.includes('Email not confirmed')) {
+        setFormError('Por favor verifica tu correo electrónico antes de iniciar sesión.');
+      } else {
+        setFormError('Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.');
+      }
     } finally {
-      setIsSubmitting(false);
+      if (isMounted) {
+        setIsSubmitting(false);
+      }
     }
-  };
+  }, [formData, validateForm, router, isMounted]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+    // Limpiar el error cuando el usuario comienza a escribir
+    if (formError) setFormError('');
+  }, [formError]);
 
   return (
     <div className="w-full max-w-md">
@@ -54,10 +92,10 @@ function LoginForm() {
         <p className="text-gray-500 text-sm mt-2">Ingresa tus credenciales para acceder a la plataforma</p>
       </div>
       
-      {/* Error messages */}
-      {(formError || authError) && (
+      {/* Error message */}
+      {formError && (
         <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md">
-          {formError || authError}
+          {formError}
         </div>
       )}
       
@@ -131,24 +169,7 @@ function LoginForm() {
   );
 }
 
-// This is the main page component
 export default function Login() {
-  const [isClient, setIsClient] = useState(false);
-
-  // This effect runs only on the client side
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Don't render anything during SSR or before component mounts
-  if (!isClient) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-gray-500">Cargando...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Panel */}

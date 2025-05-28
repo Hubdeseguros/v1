@@ -1,34 +1,32 @@
-"use client"
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LogoutPage() {
   const router = useRouter();
   
   useEffect(() => {
-    const logout = () => {
+    // Función para limpiar la sesión
+    const clearSession = () => {
       try {
-        // 1. Limpiar todos los datos de sesión
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('role');
-          localStorage.removeItem('permissions');
-          
-          // 2. Forzar una recarga completa para limpiar el estado de la aplicación
-          // Usando replace para evitar que el usuario pueda volver atrás a la sesión
-          window.location.replace('/');
-        }
+        // Limpiar todos los datos de sesión
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        localStorage.removeItem('permissions');
+        
+        // Redirigir al inicio usando el enrutador de Next.js
+        router.push('/');
       } catch (error) {
-        console.error("Error al cerrar sesión:", error);
-        // Si hay un error, redirigir de todos modos
-        window.location.replace('/');
+        console.error('Error al cerrar sesión:', error);
+        // En caso de error, intentar redirigir de todos modos
+        router.push('/');
       }
     };
     
     // Pequeño retraso para asegurar que la UI se actualice
-    const timer = setTimeout(logout, 100);
+    const timer = setTimeout(clearSession, 100);
     
     // Limpiar el temporizador si el componente se desmonta
     return () => clearTimeout(timer);

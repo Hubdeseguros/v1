@@ -1,66 +1,68 @@
-// Mock de localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
+// Importaciones de testing-library
+import { render, screen, act } from '@testing-library/react';
+import { createLocalStorageMock } from '../../__mocks__/localStorageMock';
+import LogoutPage from '@/app/logout/page';
 
 // Configurar el mock de localStorage
-global.localStorage = localStorageMock as Storage;
+const localStorageMock = createLocalStorageMock();
 
-// Mock del componente de logout
-jest.mock('@/app/logout/page', () => {
-  const { useEffect } = require('react');
-  
-  return function LogoutPage() {
-    useEffect(() => {
-      // Simular la lógica de limpieza
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-      localStorage.removeItem('permissions');
-    }, []);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-700">Cerrando sesión...</p>
-        </div>
-      </div>
-    );
-  };
-});
+// Mock de next/navigation
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: mockReplace,
+  }),
+}));
+
+// Mock de timers para manejar setTimeout
+jest.useFakeTimers();
 
 describe('LogoutPage', () => {
+  // Datos de prueba
+  const testUser = { id: 1, name: 'Test User' };
+  const testToken = 'test-token';
+  const testRole = 'admin';
+  const testPermissions = 'read,write';
+
   beforeEach(() => {
     // Limpiar localStorage antes de cada prueba
     localStorage.clear();
+    
     // Configurar algunos datos de prueba
-    localStorage.setItem('token', 'test-token');
-    localStorage.setItem('user', JSON.stringify({ id: 1, name: 'Test User' }));
-    localStorage.setItem('role', 'admin');
-    localStorage.setItem('permissions', 'read,write');
+    localStorage.setItem('token', testToken);
+    localStorage.setItem('user', JSON.stringify(testUser));
+    localStorage.setItem('role', testRole);
+    localStorage.setItem('permissions', testPermissions);
+    
+    // Limpiar todos los mocks antes de cada prueba
+    jest.clearAllMocks();
   });
 
-  it('debe limpiar el localStorage al montarse', () => {
-    const { getByText } = require('@testing-library/react');
-    const LogoutPage = require('@/app/logout/page').default;
-    const { render } = require('@testing-library/react');
-    
+  afterEach(() => {
+    // Limpiar localStorage después de cada prueba
+    localStorage.clear();
+    // Limpiar todos los timers pendientes
+    jest.clearAllTimers();
+  });
+
+  afterAll(() => {
+    // Restaurar los timers originales después de todas las pruebas
+    jest.useRealTimers();
+  });
+
+  it('debe limpiar el localStorage al montarse', async () => {
+    // Act
     render(<LogoutPage />);
     
-    // Verificar que los datos se hayan eliminado
+    // Avanzar el tiempo para que se ejecute el efecto
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    
+    // Assert
     expect(localStorage.getItem('token')).toBeNull();
     expect(localStorage.getItem('user')).toBeNull();
     expect(localStorage.getItem('role')).toBeNull();
@@ -68,11 +70,24 @@ describe('LogoutPage', () => {
   });
 
   it('debe mostrar el mensaje de cierre de sesión', () => {
-    const { getByText } = require('@testing-library/react');
-    const LogoutPage = require('@/app/logout/page').default;
-    const { render } = require('@testing-library/react');
-    
+    // Act
     render(<LogoutPage />);
-    expect(getByText('Cerrando sesión...')).toBeTruthy();
+    
+    // Assert
+    const loadingText = screen.getByText(/cerrando sesión/i);
+    expect(loadingText).toBeInTheDocument();
+  });
+
+  it('debe redirigir al inicio después de cerrar sesión', () => {
+    // Act
+    render(<LogoutPage />);
+    
+    // Avanzar el tiempo para que se ejecute el efecto
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    
+    // Assert
+    expect(mockPush).toHaveBeenCalledWith('/');
   });
 });

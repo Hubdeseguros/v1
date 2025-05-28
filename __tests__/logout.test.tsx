@@ -1,22 +1,8 @@
-// Mock de localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
+// Importar el mock de localStorage
+import { createLocalStorageMock } from './__mocks__/localStorageMock';
 
 // Configurar el mock de localStorage
-global.localStorage = localStorageMock as Storage;
+const localStorageMock = createLocalStorageMock();
 
 describe('Logout functionality', () => {
   beforeEach(() => {
