@@ -26,8 +26,8 @@ function LoginForm() {
         throw new Error(error);
       }
       
-      // Redirect to dashboard after successful login
-      window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
+      // Redirect to dashboard after successful login using Next.js router
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Error en el inicio de sesión:', error);
       setFormError(error.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
@@ -77,16 +77,12 @@ function LoginForm() {
         <div>
           <div className="flex items-center justify-between mb-1">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-            <a 
-              href="https://hubdeseguros.github.io/v1/recuperar-password" 
-              className="text-sm text-primary hover:text-secondary cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = 'https://hubdeseguros.github.io/v1/recuperar-password';
-              }}
+            <Link 
+              href="/recuperar-password" 
+              className="text-sm text-primary hover:text-secondary"
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
           <input 
             id="password" 
@@ -117,12 +113,8 @@ function LoginForm() {
         <p className="text-sm text-gray-600">
           ¿No tienes una cuenta?{' '}
           <Link 
-            href="https://hubdeseguros.github.io/v1/registro" 
+            href="/registro" 
             className="font-medium text-primary hover:text-secondary"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = 'https://hubdeseguros.github.io/v1/registro';
-            }}
           >
             Regístrate
           </Link>
