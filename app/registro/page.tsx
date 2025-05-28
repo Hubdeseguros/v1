@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function Registro() {
   const [formData, setFormData] = useState({
@@ -13,16 +14,21 @@ export default function Registro() {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signUp, user } = useAuth();
+  const { signUp } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Si el usuario ya está autenticado, redirigir al dashboard
+  // Evitar que la página parpadee mostrando el formulario si ya está autenticado
   useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        router.push('/dashboard');
+      }
+    };
+    
+    checkSession();
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,7 +54,7 @@ export default function Registro() {
     }
     
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       const { error } = await signUp(formData.email, formData.password, { full_name: formData.nombre });
       
       if (error) {
@@ -57,11 +63,13 @@ export default function Registro() {
       
       // Redirigir a la página de verificación de correo
       router.push('/verificar-email');
+      return; // Importante: salir de la función después de la redirección
+      
     } catch (error: any) {
       console.error('Error en el registro:', error);
       setError(error.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
   return (
@@ -124,7 +132,7 @@ export default function Registro() {
                 required 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Juan Pérez"
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             
@@ -140,7 +148,7 @@ export default function Registro() {
                 required 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="ejemplo@correo.com"
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             
@@ -156,7 +164,7 @@ export default function Registro() {
                 required 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             
@@ -172,7 +180,7 @@ export default function Registro() {
                 required 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             
@@ -202,10 +210,10 @@ export default function Registro() {
             <div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmitting}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+                {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
               </button>
             </div>
           </form>
