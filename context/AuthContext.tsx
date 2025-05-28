@@ -122,18 +122,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      // 1. Cerrar sesión en Supabase
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Limpiar el estado del usuario
+      // 2. Limpiar el estado local
       setUser(null);
       
-      // Forzar una recarga completa para limpiar cualquier estado de la aplicación
-      window.location.href = '/login';
+      // 3. Limpiar cualquier almacenamiento local relacionado con la sesión
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // 4. Eliminar cookies relacionadas con la autenticación
+        document.cookie.split(';').forEach(c => {
+          document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        });
+        
+        // 5. Redirigir a la página de login con un parámetro para forzar recarga
+        // Usamos replaceState para limpiar el historial de navegación
+        window.history.replaceState({}, '', '/login');
+        
+        // 6. Forzar recarga completa para limpiar el estado de la aplicación
+        window.location.href = window.location.origin + (process.env.NODE_ENV === 'production' ? '/v1' : '') + '/login';
+      }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       // Asegurarse de redirigir incluso si hay un error
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        window.location.href = window.location.origin + (process.env.NODE_ENV === 'production' ? '/v1' : '') + '/login';
+      }
     }
   };
 
