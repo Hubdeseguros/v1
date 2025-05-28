@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         } else {
           setUser(null);
-          // Redirigir a login si no está autenticado y no está en la página de login
-          if (!pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
+          // Solo redirigir a login si no está en la página de login, recuperación de contraseña o en la raíz
+          if (pathname !== '/' && !pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
             router.push('/login');
           }
         }
@@ -97,7 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else {
         setUser(null);
-        if (!pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
+        // Solo redirigir a login si no está en la página de login, recuperación de contraseña o en la raíz
+        if (pathname !== '/' && !pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
           router.push('/login');
         }
       }
