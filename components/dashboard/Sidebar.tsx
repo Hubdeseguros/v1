@@ -87,21 +87,7 @@ const clienteMenuItems: MenuItem[] = [
   },
 ];
 
-const mainMenuItems: MenuItem[] = [
-  {
-    name: 'Panel de Administración',
-    icon: <FiSettings className="w-5 h-5" />,
-    href: '/dashboard/administracion',
-    subItems: [
-      { name: 'Usuarios', href: '/dashboard/administracion/usuarios', description: 'Gestión de usuarios' },
-      { name: 'Roles', href: '/dashboard/administracion/roles', description: 'Configuración de roles' },
-      { name: 'Permisos', href: '/dashboard/administracion/permisos', description: 'Gestión de permisos' },
-      { name: 'Copias de Seguridad', href: '/dashboard/administracion/backups', description: 'Respaldos del sistema' },
-      { name: 'Logs', href: '/dashboard/administracion/logs', description: 'Registro de actividades' },
-      { name: 'Sucursales', href: '/dashboard/administracion/sucursales', description: 'Gestión de sedes' },
-      { name: 'Productos', href: '/dashboard/administracion/productos', description: 'Catálogo de productos' }
-    ]
-  },
+];
   {
     name: 'Inicio',
     icon: <FiHome className="w-5 h-5" />,
