@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
@@ -14,8 +14,15 @@ export default function Registro() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const router = useRouter();
+  
+  // Si el usuario ya está autenticado, redirigir al dashboard
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,8 +55,8 @@ export default function Registro() {
         throw new Error(error);
       }
       
-      // Redirigir al dashboard después del registro exitoso
-      window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
+      // Redirigir a la página de verificación de correo
+      router.push('/verificar-email');
     } catch (error: any) {
       console.error('Error en el registro:', error);
       setError(error.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.');

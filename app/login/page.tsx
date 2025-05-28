@@ -8,8 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 // Client-side form component
 function LoginForm() {
   const router = useRouter();
-  const { signIn, error: authError, loading } = useAuth();
+  const { signIn, error: authError } = useAuth();
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,6 +19,7 @@ function LoginForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setIsSubmitting(true);
     
     try {
       const { error } = await signIn(formData.email, formData.password);
@@ -31,6 +33,8 @@ function LoginForm() {
     } catch (error: any) {
       console.error('Error en el inicio de sesión:', error);
       setFormError(error.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -66,7 +70,7 @@ function LoginForm() {
             type="email" 
             value={formData.email}
             onChange={handleChange}
-            disabled={loading}
+            disabled={isSubmitting}
             autoComplete="email" 
             required 
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -90,7 +94,7 @@ function LoginForm() {
             type="password" 
             value={formData.password}
             onChange={handleChange}
-            disabled={loading}
+            disabled={isSubmitting}
             autoComplete="current-password" 
             required 
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -101,10 +105,10 @@ function LoginForm() {
         <div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </div>
       </form>

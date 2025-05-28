@@ -164,45 +164,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      // 1. Crear el usuario en Auth
+      // 1. Verificar si el correo ya está en uso
+      const { data: existingUser, error: userLookupError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (existingUser && !userLookupError) {
+        throw new Error('Este correo electrónico ya está registrado');
+      }
+
+      // 2. Crear el usuario en Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: userData.full_name,
+            email_redirect_to: `${window.location.origin}/dashboard`
           },
+          emailRedirectTo: `${window.location.origin}/dashboard`
         },
       });
 
       if (signUpError) throw signUpError;
 
-      // 2. Crear el perfil del usuario en la base de datos
+      // 3. Crear el perfil del usuario en la base de datos
       if (authData.user) {
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
             {
               id: authData.user.id,
-              email,
-              full_name: userData.full_name,
+              email: email.toLowerCase().trim(),
+              full_name: userData.full_name.trim(),
               role: 'CLIENTE', // Rol por defecto
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             },
           ]);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Error al crear perfil:', profileError);
+          throw new Error('Error al crear el perfil del usuario');
+        }
 
-        // Actualizar el estado del usuario
-        setUser({
-          id: authData.user.id,
-          email: authData.user.email || '',
-          user_metadata: {
-            full_name: userData.full_name,
-          },
-          role: 'CLIENTE',
-        });
+        // No actualizamos el estado del usuario aquí para forzar la verificación de correo
+        // El usuario será redirigido a la página de verificación
+        return { error: null };
       }
-
+      
       return { error: null };
     } catch (error: any) {
       const errorMessage = error.message || 'Error al registrar el usuario';
