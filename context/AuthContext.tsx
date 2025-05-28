@@ -122,35 +122,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      // 1. Cerrar sesión en Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      // 2. Limpiar el estado local
+      // 1. Limpiar el estado local primero para una respuesta más rápida
       setUser(null);
       
-      // 3. Limpiar cualquier almacenamiento local relacionado con la sesión
+      // 2. Intentar cerrar sesión en Supabase
+      await supabase.auth.signOut();
+      
+      // 3. Limpiar almacenamiento local
       if (typeof window !== 'undefined') {
+        // Limpiar localStorage y sessionStorage
         localStorage.clear();
         sessionStorage.clear();
         
-        // 4. Eliminar cookies relacionadas con la autenticación
-        document.cookie.split(';').forEach(c => {
-          document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        // Limpiar cookies
+        document.cookie.split(';').forEach(cookie => {
+          const [name] = cookie.trim().split('=');
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
         });
         
-        // 5. Redirigir a la página de login con un parámetro para forzar recarga
-        // Usamos replaceState para limpiar el historial de navegación
-        window.history.replaceState({}, '', '/login');
+        // Redirigir a la página de login
+        const basePath = process.env.NODE_ENV === 'production' ? '/v1' : '';
+        const loginUrl = `${window.location.origin}${basePath}/login`;
         
-        // 6. Forzar recarga completa para limpiar el estado de la aplicación
-        window.location.href = window.location.origin + (process.env.NODE_ENV === 'production' ? '/v1' : '') + '/login';
+        // Usar replace para evitar que el usuario pueda volver atrás
+        window.location.replace(loginUrl);
       }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-      // Asegurarse de redirigir incluso si hay un error
+      // Asegurar la redirección incluso si hay un error
       if (typeof window !== 'undefined') {
-        window.location.href = window.location.origin + (process.env.NODE_ENV === 'production' ? '/v1' : '') + '/login';
+        const basePath = process.env.NODE_ENV === 'production' ? '/v1' : '';
+        window.location.replace(`${window.location.origin}${basePath}/login`);
       }
     }
   };
