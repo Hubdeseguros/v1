@@ -417,9 +417,10 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
       {/* Pie de página */}
       <div className="p-4 border-t border-gray-700">
         <button 
-          onClick={() => {
-            // Redirigir a la página de logout que manejará la limpieza de la sesión
-            window.location.href = '/logout';
+          onClick={(e) => {
+            e.preventDefault();
+            // Usar el router para una navegación más fluida
+            router.push('/logout');
           }}
           className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors w-full"
         >

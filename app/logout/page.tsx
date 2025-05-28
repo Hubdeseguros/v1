@@ -7,27 +7,31 @@ export default function LogoutPage() {
   const router = useRouter();
   
   useEffect(() => {
-    const logout = async () => {
-      // Limpiar tokens y datos de sesión
-      if (typeof window !== "undefined") {
-        try {
-          // Limpiar todos los datos de sesión
-          localStorage.clear();
+    const logout = () => {
+      try {
+        // 1. Limpiar todos los datos de sesión
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('role');
+          localStorage.removeItem('permissions');
           
-          // Forzar una recarga completa para limpiar el estado de la aplicación
-          window.location.href = '/';
-          
-        } catch (error) {
-          console.error("Error al limpiar sesión:", error);
-          window.location.href = '/';
+          // 2. Forzar una recarga completa para limpiar el estado de la aplicación
+          // Usando replace para evitar que el usuario pueda volver atrás a la sesión
+          window.location.replace('/');
         }
-      } else {
-        // En caso de que window no esté disponible, redirigir de todos modos
-        router.push("/");
+      } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        // Si hay un error, redirigir de todos modos
+        window.location.replace('/');
       }
     };
     
-    logout();
+    // Pequeño retraso para asegurar que la UI se actualice
+    const timer = setTimeout(logout, 100);
+    
+    // Limpiar el temporizador si el componente se desmonta
+    return () => clearTimeout(timer);
   }, [router]);
 
   // Mostrar un mensaje de cierre de sesión mientras se redirige
