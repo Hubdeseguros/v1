@@ -2,6 +2,14 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+declare global {
+  namespace NodeJS {
+    interface Global {
+      localStorage: Storage;
+      setTimeout: typeof setTimeout;
+    }
+  }
+}
 import { useRouter } from 'next/navigation';
 import { useMobileMenu } from '@/context/MobileMenuContext';
 import { 
@@ -414,11 +422,11 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
             localStorage.removeItem('user');
             window.location.href = '/';
           }}
-          className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors"
+          className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors w-full"
         >
           <FiLogOut className="w-5 h-5" />
           <span className="ml-3">Cerrar sesión</span>
-        </Link>
+        </button>
       </div>
     </div>
   );
