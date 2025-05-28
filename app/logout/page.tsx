@@ -1,7 +1,11 @@
 "use client"
 
 export default function LogoutPage() {
-  // Redirigir al inicio
-  window.location.href = "/";
+  // Redirigir al inicio usando Next.js router
+  const router = useRouter();
+  useEffect(() => {
+    router.push("/");
+  }, [router]);
+
   return null;
 }
