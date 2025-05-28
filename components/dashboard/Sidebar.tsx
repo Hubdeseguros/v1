@@ -84,10 +84,10 @@ const clienteMenuItems: MenuItem[] = [
       { name: 'Facturas', href: '/cliente/documentos/facturas', description: 'Facturas y recibos' },
       { name: 'Contratos', href: '/cliente/documentos/contratos', description: 'Documentos legales' },
     ]
-  },
+  }
 ];
 
-];
+const adminMenuItems: MenuItem[] = [
   {
     name: 'Inicio',
     icon: <FiHome className="w-5 h-5" />,
@@ -301,7 +301,7 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
   // Filtrar menús según el rol
   const filteredMainMenu = role === 'CLIENTE' 
     ? clienteMenuItems 
-    : mainMenuItems.filter(item => {
+    : adminMenuItems.filter((item: MenuItem) => {
         if (role === 'ADMIN') return true;
         if (role === 'AGENCIA') return !['Administración'].includes(item.name);
         if (role === 'PROMOTOR') {
