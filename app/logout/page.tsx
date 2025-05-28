@@ -15,8 +15,26 @@ export default function LogoutPage() {
       localStorage.removeItem("permissions");
     }
     
-    // Redirigir al inicio
-    router.push("/");
+    // Redirigir según el rol previo
+    const role = localStorage.getItem("role");
+    let redirectPath = "/";
+    
+    if (role === "ADMIN") {
+      redirectPath = "/dashboard";
+    } else if (role === "AGENCIA") {
+      redirectPath = "/dashboard";
+    } else if (role === "PROMOTOR") {
+      redirectPath = "/promotor";
+    } else if (role === "CLIENTE") {
+      redirectPath = "/cliente";
+    }
+    
+    // Limpiar el rol después de determinar la ruta
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("role");
+    }
+    
+    router.push(redirectPath);
   }, [router]);
 
   return null;
