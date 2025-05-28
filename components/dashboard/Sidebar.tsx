@@ -408,8 +408,12 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
 
       {/* Pie de página */}
       <div className="p-4 border-t border-gray-700">
-        <Link 
-          href="/logout" 
+        <button 
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+          }}
           className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors"
         >
           <FiLogOut className="w-5 h-5" />
