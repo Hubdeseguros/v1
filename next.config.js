@@ -15,10 +15,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    // Desactivar optimización de imágenes para exportación estática
-    loader: 'custom',
-    loaderFile: './image-loader.js',
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840]
   },
   trailingSlash: true,
   compress: true,
