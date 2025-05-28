@@ -1,15 +1,14 @@
 "use client"
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useLogout } from "@/utils/navigation";
 
 export default function LogoutPage() {
-  // Redirigir al inicio usando Next.js router
-  const router = useRouter();
+  const { handleLogout } = useLogout();
   
   useEffect(() => {
-    router.push("/");
-  }, [router]);
+    handleLogout();
+  }, []);
 
   return null;
 }
