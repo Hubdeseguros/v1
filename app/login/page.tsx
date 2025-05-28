@@ -84,16 +84,7 @@ export default function Login() {
             <p className="text-gray-500 text-sm mt-2">Ingresa tus credenciales para acceder a la plataforma</p>
           </div>
           
-          {formError && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md">
-              {formError}
-            </div>
-          )}
-          {authError && !formError && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md">
-              {authError}
-            </div>
-          )}
+{/* Mensajes de error se manejan después del botón de submit */}
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -142,9 +133,9 @@ export default function Login() {
                 {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
               </button>
               {(formError || authError) && (
-                <p className="mt-2 text-sm text-red-600">
+                <div className="mt-2 p-2 bg-red-50 text-red-700 text-sm rounded-md">
                   {formError || authError}
-                </p>
+                </div>
               )}
             </div>
           </form>
