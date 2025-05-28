@@ -63,8 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         } else {
           setUser(null);
-          // Solo redirigir a login si no está en la página de login, recuperación de contraseña o en la raíz
-          if (pathname !== '/' && !pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
+          // Solo redirigir a login si no está en la página de login, registro, recuperación de contraseña o en la raíz
+          const publicPaths = ['/', '/login', '/registro', '/recuperar-password'];
+          const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
+          
+          if (!isPublicPath) {
             router.push('/login');
           }
         }
@@ -97,8 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else {
         setUser(null);
-        // Solo redirigir a login si no está en la página de login, recuperación de contraseña o en la raíz
-        if (pathname !== '/' && !pathname.startsWith('/login') && !pathname.startsWith('/recuperar-password')) {
+        // Solo redirigir a login si no está en la página de login, registro, recuperación de contraseña o en la raíz
+        const publicPaths = ['/', '/login', '/registro', '/recuperar-password'];
+        const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
+        
+        if (!isPublicPath) {
           router.push('/login');
         }
       }
