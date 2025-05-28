@@ -18,7 +18,7 @@ export default function DashboardLayout({
         
         {/* Sidebar */}
         <div className="md:block">
-          <Sidebar />
+          <Sidebar role="ADMIN" />
         </div>
         
         {/* Contenido principal */}
