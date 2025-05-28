@@ -164,6 +164,16 @@ const adminMenuItems: MenuItem[] = [
     ]
   },
   {
+    name: 'Reportes',
+    icon: <FiBarChart2 className="w-5 h-5" />,
+    href: '/dashboard/reportes',
+    subItems: [
+      { name: 'Reportes de Venta', href: '/dashboard/reportes/ventas', description: 'Análisis detallado de ventas' },
+      { name: 'Reportes de Cobranza', href: '/dashboard/reportes/cobranza', description: 'Seguimiento de cobranza' },
+      { name: 'Reportes de Cliente', href: '/dashboard/reportes/clientes', description: 'Estadísticas de clientes' },
+    ]
+  },
+  {
     name: 'Administración',
     icon: <FiSettings className="w-5 h-5" />,
     href: '/dashboard/administracion',
@@ -175,16 +185,6 @@ const adminMenuItems: MenuItem[] = [
       { name: 'Logs del Sistema', href: '/dashboard/administracion/logs', description: 'Registro de actividades' },
       { name: 'Sucursales', href: '/dashboard/administracion/sucursales', description: 'Administración de sedes' },
       { name: 'Productos', href: '/dashboard/administracion/productos', description: 'Catálogo de productos' },
-    ]
-  },
-  {
-    name: 'Reportes',
-    icon: <FiBarChart2 className="w-5 h-5" />,
-    href: '/dashboard/reportes',
-    subItems: [
-      { name: 'Reportes de Venta', href: '/dashboard/reportes/ventas', description: 'Análisis detallado de ventas' },
-      { name: 'Reportes de Cobranza', href: '/dashboard/reportes/cobranza', description: 'Seguimiento de cobranza' },
-      { name: 'Reportes de Cliente', href: '/dashboard/reportes/clientes', description: 'Estadísticas de clientes' },
     ]
   },
 ];
