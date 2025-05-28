@@ -68,7 +68,17 @@ export default function RecuperarPassword() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              ¿Recordaste tu contraseña? <Link href="/login" className="font-medium text-primary hover:text-secondary">Volver al inicio de sesión</Link>
+              ¿Recordaste tu contraseña?{' '}
+              <a 
+                href="https://hubdeseguros.github.io/v1/login" 
+                className="font-medium text-primary hover:text-secondary cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = 'https://hubdeseguros.github.io/v1/login';
+                }}
+              >
+                Volver al inicio de sesión
+              </a>
             </p>
           </div>
         </div>

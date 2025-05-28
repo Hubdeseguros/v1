@@ -73,9 +73,16 @@ function LoginForm() {
         <div>
           <div className="flex items-center justify-between mb-1">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-            <Link href="/recuperar-password" className="text-sm text-primary hover:text-secondary">
+            <a 
+              href="https://hubdeseguros.github.io/v1/recuperar-password" 
+              className="text-sm text-primary hover:text-secondary cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = 'https://hubdeseguros.github.io/v1/recuperar-password';
+              }}
+            >
               ¿Olvidaste tu contraseña?
-            </Link>
+            </a>
           </div>
           <input 
             id="password" 
@@ -104,7 +111,17 @@ function LoginForm() {
       
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          ¿No tienes una cuenta? <Link href="/registro" className="font-medium text-primary hover:text-secondary">Regístrate</Link>
+          ¿No tienes una cuenta?{' '}
+          <Link 
+            href="https://hubdeseguros.github.io/v1/registro" 
+            className="font-medium text-primary hover:text-secondary"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = 'https://hubdeseguros.github.io/v1/registro';
+            }}
+          >
+            Regístrate
+          </Link>
         </p>
         <p className="text-xs text-gray-500 mt-4">
           Acceso demo: <span className="font-medium">admin@admin.com / admin123</span>

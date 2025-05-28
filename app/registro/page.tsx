@@ -106,20 +106,47 @@ export default function Registro() {
                 className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" 
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                Acepto los <Link href="/terminos" className="text-primary hover:text-secondary">términos y condiciones</Link>
+                Acepto los{' '}
+                <a 
+                  href="https://hubdeseguros.github.io/v1/terminos" 
+                  className="text-primary hover:text-secondary cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = 'https://hubdeseguros.github.io/v1/terminos';
+                  }}
+                >
+                  términos y condiciones
+                </a>
               </label>
             </div>
             
             <div>
-              <Link href="/dashboard" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+              <a 
+                href="https://hubdeseguros.github.io/v1/dashboard" 
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
+                }}
+              >
                 Crear cuenta
-              </Link>
+              </a>
             </div>
           </form>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              ¿Ya tienes cuenta? <Link href="/login" className="font-medium text-primary hover:text-secondary">Inicia sesión</Link>
+              ¿Ya tienes cuenta?{' '}
+              <a 
+                href="https://hubdeseguros.github.io/v1/login" 
+                className="font-medium text-primary hover:text-secondary cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = 'https://hubdeseguros.github.io/v1/login';
+                }}
+              >
+                Inicia sesión
+              </a>
             </p>
           </div>
         </div>
