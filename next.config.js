@@ -7,13 +7,18 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
+  // Configuración para GitHub Pages
   output: 'export',
   basePath: isProd ? `/${repo}` : '',
   assetPrefix: isProd ? `/${repo}/` : '',
+  // Configuración de imágenes optimizadas para exportación
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    // Desactivar optimización de imágenes para exportación estática
+    loader: 'custom',
+    loaderFile: './image-loader.js',
   },
   trailingSlash: true,
   compress: true,
