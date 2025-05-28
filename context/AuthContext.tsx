@@ -248,19 +248,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Error al cerrar sesión en Supabase:', error);
       });
       
-      // 4. Redirigir a la página de login
+      // 4. Redirigir a la página de login en el dominio especificado
       if (typeof window !== 'undefined') {
-        // Usar el router de Next.js para la navegación
-        router.push('/login');
-        // Forzar recarga para limpiar el estado de la aplicación
-        window.location.href = '/login';
+        // Usar el router de Next.js para la navegación inicial
+        router.push('https://hubdeseguros.github.io/v1/login/');
+        // Forzar recarga para limpiar el estado de la aplicación y asegurar la redirección
+        window.location.href = 'https://hubdeseguros.github.io/v1/login/';
       }
       
     } catch (error) {
       console.error('Error en el proceso de cierre de sesión:', error);
       // Asegurar la redirección incluso si hay un error
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = 'https://hubdeseguros.github.io/v1/login/';
       }
     }
   };

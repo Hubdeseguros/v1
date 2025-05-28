@@ -12,6 +12,7 @@ declare global {
 }
 import { useRouter } from 'next/navigation';
 import { useMobileMenu } from '@/context/MobileMenuContext';
+import { useAuth } from '@/context/AuthContext';
 import { 
   FiHome, FiUsers, FiFileText, FiAlertTriangle, FiDollarSign, 
   FiPieChart, FiFolder, FiSend, FiSettings, FiBarChart2,
@@ -237,6 +238,7 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const router = useRouter();
   const { toggleMenu: toggleMobileMenu } = useMobileMenu();
+  const { signOut } = useAuth();
   const clickTimers = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const clickCounts = useRef<{[key: string]: number}>({});
   
@@ -417,10 +419,16 @@ export default function Sidebar({ role = 'AGENCIA', className = '' }: SidebarPro
       {/* Pie de página */}
       <div className="p-4 border-t border-gray-700">
         <button 
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault();
-            // Usar el router para una navegación más fluida
-            router.push('/logout');
+            try {
+              await signOut();
+              // La redirección se maneja en la función signOut
+            } catch (error) {
+              console.error('Error al cerrar sesión:', error);
+              // Forzar la redirección en caso de error
+              window.location.href = 'https://hubdeseguros.github.io/v1/login/';
+            }
           }}
           className="flex items-center p-2 text-gray-300 hover:text-white hover:bg-secondary/50 rounded-md transition-colors w-full"
         >
