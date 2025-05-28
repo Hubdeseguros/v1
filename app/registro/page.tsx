@@ -1,6 +1,62 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
 export default function Registro() {
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    // Validaciones
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+    
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const { error } = await signUp(formData.email, formData.password, { full_name: formData.nombre });
+      
+      if (error) {
+        throw new Error(error);
+      }
+      
+      // Redirigir al dashboard después del registro exitoso
+      window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
+    } catch (error: any) {
+      console.error('Error en el registro:', error);
+      setError(error.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Panel izquierdo */}
@@ -42,18 +98,26 @@ export default function Registro() {
             <p className="text-gray-500 text-sm mt-2">Completa tus datos para registrarte</p>
           </div>
           
-          <form className="space-y-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
               <input 
                 id="nombre" 
                 name="nombre" 
                 type="text" 
-                defaultValue="Juan Pérez"
+                value={formData.nombre}
+                onChange={handleChange}
                 autoComplete="name" 
                 required 
-                className="input-field"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Juan Pérez"
+                disabled={loading}
               />
             </div>
             
@@ -63,11 +127,13 @@ export default function Registro() {
                 id="email" 
                 name="email" 
                 type="email" 
-                defaultValue="admin@hubseguros.com"
+                value={formData.email}
+                onChange={handleChange}
                 autoComplete="email" 
                 required 
-                className="input-field"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="ejemplo@correo.com"
+                disabled={loading}
               />
             </div>
             
@@ -77,23 +143,29 @@ export default function Registro() {
                 id="password" 
                 name="password" 
                 type="password" 
+                value={formData.password}
+                onChange={handleChange}
                 autoComplete="new-password" 
                 required 
-                className="input-field"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
+                disabled={loading}
               />
             </div>
             
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
               <input 
-                id="confirm-password" 
-                name="confirm-password" 
+                id="confirmPassword" 
+                name="confirmPassword" 
                 type="password" 
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 autoComplete="new-password" 
                 required 
-                className="input-field"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
+                disabled={loading}
               />
             </div>
             
@@ -107,7 +179,7 @@ export default function Registro() {
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
                 Acepto los{' '}
-                <a 
+                <Link 
                   href="https://hubdeseguros.github.io/v1/terminos" 
                   className="text-primary hover:text-secondary cursor-pointer"
                   onClick={(e) => {
@@ -116,37 +188,30 @@ export default function Registro() {
                   }}
                 >
                   términos y condiciones
-                </a>
+                </Link>
               </label>
             </div>
             
             <div>
-              <a 
-                href="https://hubdeseguros.github.io/v1/dashboard" 
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
-                }}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Crear cuenta
-              </a>
+                {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
             </div>
           </form>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               ¿Ya tienes cuenta?{' '}
-              <a 
-                href="https://hubdeseguros.github.io/v1/login" 
+              <Link 
+                href="/login" 
                 className="font-medium text-primary hover:text-secondary cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = 'https://hubdeseguros.github.io/v1/login';
-                }}
               >
                 Inicia sesión
-              </a>
+              </Link>
             </p>
           </div>
         </div>

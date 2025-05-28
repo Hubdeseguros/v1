@@ -11,23 +11,27 @@ function LoginForm() {
   const { signIn, error: authError, loading } = useAuth();
   const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({
-    email: 'admin@admin.com',
-    password: 'admin123'
+    email: '',
+    password: ''
   });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError('');
     
-    const { error } = await signIn(formData.email, formData.password);
-    
-    if (error) {
-      setFormError(error);
-      return;
+    try {
+      const { error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        throw new Error(error);
+      }
+      
+      // Redirect to dashboard after successful login
+      window.location.href = 'https://hubdeseguros.github.io/v1/dashboard';
+    } catch (error: any) {
+      console.error('Error en el inicio de sesión:', error);
+      setFormError(error.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
     }
-    
-    // Redirect to dashboard after successful login
-    router.push('/dashboard');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +69,7 @@ function LoginForm() {
             disabled={loading}
             autoComplete="email" 
             required 
-            className="input-field w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="ejemplo@correo.com"
           />
         </div>
@@ -93,7 +97,7 @@ function LoginForm() {
             disabled={loading}
             autoComplete="current-password" 
             required 
-            className="input-field w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="••••••••"
           />
         </div>
@@ -102,7 +106,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>

@@ -1,6 +1,29 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 
 export default function RecuperarPassword() {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    
+    try {
+      // Aquí iría la lógica para enviar el correo de recuperación
+      // Por ahora simulamos un envío exitoso
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setMessage('Si existe una cuenta con este correo, recibirás un enlace para restablecer tu contraseña.');
+    } catch (error) {
+      setMessage('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Panel izquierdo */}
@@ -42,43 +65,47 @@ export default function RecuperarPassword() {
             <p className="text-gray-500 text-sm mt-2">Ingresa tu correo electrónico para recibir instrucciones</p>
           </div>
           
-          <form className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-              <input 
-                id="email" 
-                name="email" 
-                type="email" 
-                autoComplete="email" 
-                required 
-                className="input-field"
-                placeholder="ejemplo@correo.com"
-              />
-            </div>
-            
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                <input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  autoComplete="email" 
+                  required
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="ejemplo@correo.com"
+                />
+              </div>
               <button 
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Enviar instrucciones
+                {loading ? 'Enviando...' : 'Enviar instrucciones'}
               </button>
+              
+              {message && (
+                <div className="mt-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-md">
+                  {message}
+                </div>
+              )}
             </div>
           </form>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               ¿Recordaste tu contraseña?{' '}
-              <a 
-                href="https://hubdeseguros.github.io/v1/login" 
-                className="font-medium text-primary hover:text-secondary cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = 'https://hubdeseguros.github.io/v1/login';
-                }}
+              <Link 
+                href="/login" 
+                className="font-medium text-primary hover:text-secondary"
               >
                 Volver al inicio de sesión
-              </a>
+              </Link>
             </p>
           </div>
         </div>
