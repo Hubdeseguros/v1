@@ -1,14 +1,23 @@
 "use client"
 
 import { useEffect } from "react";
-import { useLogout } from "@/utils/navigation";
+import { useRouter } from "next/navigation";
 
 export default function LogoutPage() {
-  const { handleLogout } = useLogout();
+  const router = useRouter();
   
   useEffect(() => {
-    handleLogout();
-  }, []);
+    // Limpiar tokens y datos de sesión
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("permissions");
+    }
+    
+    // Redirigir al inicio
+    router.push("/");
+  }, [router]);
 
   return null;
 }
