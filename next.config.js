@@ -13,11 +13,12 @@ if (isProd && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
   console.warn('ADVERTENCIA: NEXT_PUBLIC_SUPABASE_ANON_KEY no está definido');
 }
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configuración para GitHub Pages
+  output: 'export',
   basePath: basePath,
   assetPrefix: basePath ? `${basePath}/` : '',
-  output: 'export',
   trailingSlash: true,
   
   // Configuración de imágenes
