@@ -47,7 +47,7 @@ const nextConfig = {
   },
   // Configuración adicional para GitHub Pages
   publicRuntimeConfig: {
-    basePath: isProd ? `/${repo}` : '',
+    basePath: isGHPages || isProd ? `/${repo}` : '',
   },
 }
 
