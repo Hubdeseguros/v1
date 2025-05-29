@@ -27,6 +27,12 @@ export default function RecuperarPassword() {
         return;
       }
 
+      // Verificar que supabase esté inicializado
+      if (!supabase) {
+        setMessage('Error de configuración del servidor: Supabase no inicializado');
+        setLoading(false);
+        return;
+      }
       // Implementar la lógica real de recuperación
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback`

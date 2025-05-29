@@ -7,6 +7,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
+  basePath: '/v1',
+  assetPrefix: '/v1',
   output: 'export',
   images: {
     unoptimized: true,

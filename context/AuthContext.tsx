@@ -38,6 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkUser = async () => {
       try {
         setLoading(true);
+        if (!supabase) {
+          setError('Error de configuración del servidor: Supabase no inicializado');
+          setLoading(false);
+          return;
+        }
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) throw error;
@@ -80,39 +85,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkUser();
 
+    // Inicializar la suscripción como null
+    let subscription: { unsubscribe: () => void } | null = null;
+
     // Escuchar cambios en la autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user && supabase) {
+          const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (userError) {
+            console.error('Error al obtener el perfil del usuario:', userError);
+            return;
+          }
+            
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            user_metadata: {
+              full_name: userData?.full_name || session.user.email?.split('@')[0],
+              avatar_url: userData?.avatar_url
+            },
+            role: userData?.role || 'CLIENTE'
+          });
+        } else {
+          setUser(null);
+          // Solo redirigir a login si no está en la página de login, registro, recuperación de contraseña o en la raíz
+          const publicPaths = ['/', '/login', '/registro', '/recuperar-password'];
+          const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
           
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          user_metadata: {
-            full_name: userData?.full_name || session.user.email?.split('@')[0],
-            avatar_url: userData?.avatar_url
-          },
-          role: userData?.role || 'CLIENTE'
-        });
-      } else {
-        setUser(null);
-        // Solo redirigir a login si no está en la página de login, registro, recuperación de contraseña o en la raíz
-        const publicPaths = ['/', '/login', '/registro', '/recuperar-password'];
-        const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
-        
-        if (!isPublicPath) {
-          router.push('/login');
+          if (!isPublicPath) {
+            router.push('/login');
+          }
         }
-      }
-    });
+      });
+      subscription = data.subscription;
+    }
 
     return () => {
-      // Limpiar suscripción
-      subscription?.unsubscribe();
+      // Limpiar suscripción si existe
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [pathname, router]);
 
@@ -120,6 +138,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
+      if (!supabase) {
+        setError('Error de configuración del servidor: Supabase no inicializado');
+        setLoading(false);
+        return { error: 'Error de configuración del servidor: Supabase no inicializado' };
+      }
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -130,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Obtener el perfil del usuario después del inicio de sesión exitoso
-      if (data?.user) {
+      if (data?.user && supabase) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -165,6 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       // 1. Verificar si el correo ya está en uso
+      if (!supabase) {
+        setError('Error de configuración del servidor: Supabase no inicializado');
+        setLoading(false);
+        return { error: 'Error de configuración del servidor: Supabase no inicializado' };
+      }
       const { data: existingUser, error: userLookupError } = await supabase
         .from('profiles')
         .select('id')
@@ -191,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (signUpError) throw signUpError;
 
       // 3. Crear el perfil del usuario en la base de datos
-      if (authData.user) {
+      if (authData.user && supabase) {
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
@@ -229,6 +257,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
+      if (!supabase) {
+        setError('Error de configuración del servidor: Supabase no inicializado');
+        setLoading(false);
+        return { error: 'Error de configuración del servidor: Supabase no inicializado' };
+      }
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`,
       });
@@ -263,6 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       // 3. Cerrar sesión en Supabase
+      if (!supabase) return;
       await supabase.auth.signOut().catch(error => {
         console.error('Error al cerrar sesión en Supabase:', error);
       });

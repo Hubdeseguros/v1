@@ -3,6 +3,13 @@ import { supabase, config } from '@/lib/supabase'
 
 export async function GET() {
   try {
+    // Verificar que supabase esté inicializado
+    if (!supabase) {
+      return NextResponse.json({ 
+        status: 'error',
+        message: 'Error de configuración del servidor: Supabase no inicializado'
+      }, { status: 500 })
+    }
     // Intentar obtener información básica
     const { data: { user }, error } = await supabase.auth.getUser()
     

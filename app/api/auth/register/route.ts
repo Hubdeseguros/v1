@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // Obtener cliente de Supabase para el manejador de rutas
 const supabase = createRouteHandlerClient({ cookies });
+// Obtener cliente de administración de Supabase
+const supabaseAdmin = getSupabaseAdmin();
 
 export async function POST(request: Request) {
   try {
@@ -17,9 +19,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createRouteHandlerClient({ cookies });
-
     // Verificar si el correo ya está en uso
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: { message: 'Error de configuración del servidor: Supabase Admin no inicializado' } },
+        { status: 500 }
+      );
+    }
     const { data: existingUser, error: userCheckError } = await supabaseAdmin
       .from('profiles')
       .select('email')
