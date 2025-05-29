@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production'
+const isGHPages = process.env.GITHUB_ACTIONS === 'true'
 const repo = 'v1'
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -7,8 +8,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
-  basePath: '/v1',
-  assetPrefix: '/v1',
+  // Configuración para GitHub Pages
+  basePath: isGHPages || isProd ? `/${repo}` : '',
+  assetPrefix: isGHPages || isProd ? `/${repo}/` : '',
   output: 'export',
   images: {
     unoptimized: true,
@@ -22,6 +24,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   compiler: {
     removeConsole: isProd
+  },
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isGHPages || isProd ? `/${repo}` : ''
   },
   webpack: (config, { isServer }) => {
     // Configuración de webpack para ignorar módulos problemáticos
@@ -39,6 +44,10 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
+  },
+  // Configuración adicional para GitHub Pages
+  publicRuntimeConfig: {
+    basePath: isProd ? `/${repo}` : '',
   },
 }
 
