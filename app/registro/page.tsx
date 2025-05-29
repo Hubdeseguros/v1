@@ -64,40 +64,35 @@ export default function Registro() {
       // Validar términos y condiciones
       if (!formData.terms) {
         setError('Debes aceptar los términos y condiciones');
+        setIsSubmitting(false);
         return;
       }
 
-      // Registrar el usuario en Supabase Auth
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.nombre.trim(),
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+      // Registrar el usuario
+      const { error } = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          full_name: formData.nombre.trim()
+        }),
+      }).then(res => res.json());
 
-      if (signUpError) {
-        if (signUpError.message.includes('User already registered')) {
-          setError('Este correo electrónico ya está registrado. Por favor inicia sesión o utiliza otro correo.');
-        } else if (signUpError.message.includes('Email already exists')) {
-          setError('Este correo electrónico ya está en uso. Por favor utiliza otro correo.');
-        } else {
-          setError('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
-          console.error('Error en el registro:', signUpError);
-        }
+      if (error) {
+        setError(error.message || 'Error al registrar. Intenta de nuevo.');
+        setIsSubmitting(false);
         return;
       }
       
       // Redirigir a la página de verificación
       router.push('/verificar-email');
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error en el registro:', error);
       setError('Error inesperado. Por favor, inténtalo de nuevo.');
-    } finally {
       setIsSubmitting(false);
     }
   };
