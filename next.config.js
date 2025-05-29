@@ -24,6 +24,7 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     removeConsole: isProd,
+    swcMinify: true,
   },
   experimental: {
     optimizeCss: true,
