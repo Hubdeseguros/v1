@@ -17,12 +17,9 @@
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --runInBand --coverage"
   },
-  "homepage": "https://hubdeseguros.github.io/v1",
   "dependencies": {
-    "@next/bundle-analyzer": "^14.2.29",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.49.8",
-    "@types/next": "^8.0.7",
     "autoprefixer": "^10.4.16",
     "next": "^14.2.29",
     "postcss": "^8.4.31",
