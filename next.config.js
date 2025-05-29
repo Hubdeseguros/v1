@@ -1,12 +1,17 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === 'production'
-const isGHPages = process.env.GITHUB_ACTIONS === 'true' || process.env.GITHUB_ACTIONS === true
-const repo = 'v1'
-const basePath = isGHPages || isProd ? `/${repo}` : ''
+const isProd = process.env.NODE_ENV === 'production';
+const isGHPages = process.env.GITHUB_ACTIONS === 'true';
+const repo = 'v1';
+const basePath = isGHPages || isProd ? `/${repo}` : '';
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+// Validar variables de entorno de Supabase
+if (isProd && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  console.warn('ADVERTENCIA: NEXT_PUBLIC_SUPABASE_URL no está definido');
+}
+
+if (isProd && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn('ADVERTENCIA: NEXT_PUBLIC_SUPABASE_ANON_KEY no está definido');
+}
 
 const nextConfig = {
   // Configuración para GitHub Pages
@@ -14,24 +19,25 @@ const nextConfig = {
   assetPrefix: basePath ? `${basePath}/` : '',
   output: 'export',
   trailingSlash: true,
+  
+  // Configuración de imágenes
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    disableStaticImages: true
   },
-  trailingSlash: true,
-  compress: true,
+  
+  // Configuración general
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
-  compiler: {
-    removeConsole: isProd
-  },
+  
+  // Variables de entorno
   env: {
-    NEXT_PUBLIC_BASE_PATH: basePath
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
-  webpack: (config, { isServer }) => {
-    // Configuración de webpack para ignorar módulos problemáticos
+  
+  // Configuración de webpack
+  webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -41,16 +47,8 @@ const nextConfig = {
       child_process: false,
       canvas: false,
     };
-
     return config;
   },
-  experimental: {
-    optimizeCss: true,
-  },
-  // Configuración adicional para GitHub Pages
-  publicRuntimeConfig: {
-    basePath: isGHPages || isProd ? `/${repo}` : '',
-  },
-}
+};
 
-module.exports = withBundleAnalyzer(nextConfig)
+module.exports = nextConfig;

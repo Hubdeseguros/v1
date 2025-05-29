@@ -5,6 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  NODE_ENV: production
+  REPO: v1
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -12,44 +18,52 @@ jobs:
     steps:
     - name: Checkout code
       run: |
-        # Configurar git
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
+        git clone https://github.com/Hubdeseguros/$REPO .
         
-        # Clonar el repositorio
-        git clone https://github.com/Hubdeseguros/v1.git .
-        
-    - name: Set up Node.js
+    - name: Setup Node.js
       run: |
-        # Instalar Node.js 16
-        curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+        # Instalar Node.js 18
+        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt-get install -y nodejs
         
+        # Verificar instalación
+        node -v
+        npm -v
+    
     - name: Install dependencies
-      run: |
-        npm install --prefer-offline
-        
+      run: npm ci
+    
     - name: Build
       run: |
         echo "Building the application..."
         npm run build
+        
+        # Verificar que la carpeta out existe
+        if [ ! -d "out" ]; then
+          echo "Error: La carpeta 'out' no se generó correctamente"
+          ls -la
+          exit 1
+        fi
+        
+        echo "Contenido de la carpeta out:"
         ls -la out/
         touch out/.nojekyll
-        
+    
     - name: Deploy
       run: |
-        # Instalar Git LFS si es necesario
-        sudo apt-get update
-        sudo apt-get install -y git-lfs
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
         
         # Configurar el token de acceso
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Hubdeseguros/v1.git
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
         # Configurar la rama gh-pages
         git checkout --orphan gh-pages || git checkout gh-pages
         
         # Limpiar el directorio excepto .git
-        find . -maxdepth 1 ! -name 'out' ! -name '.git' ! -name '.gitignore' -exec rm -rf {} +
+        find . -maxdepth 1 ! -name 'out' ! -name '.git' ! -name '.gitignore' ! -name '.nojekyll' -exec rm -rf {} +
         
         # Mover los archivos construidos al directorio raíz
         cp -a out/. .
