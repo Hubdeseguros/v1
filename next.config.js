@@ -7,24 +7,33 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
-  // Configuración para GitHub Pages
   output: 'export',
-  basePath: isProd ? `/${repo}` : '',
-  assetPrefix: isProd ? `/${repo}/` : '',
-  // Configuración de imágenes optimizadas para exportación
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840]
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    disableStaticImages: true
   },
   trailingSlash: true,
   compress: true,
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
-  swcMinify: true,
   compiler: {
-    removeConsole: isProd,
-    swcMinify: true,
+    removeConsole: isProd
+  },
+  webpack: (config, { isServer }) => {
+    // Configuración de webpack para ignorar módulos problemáticos
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      dns: false,
+      child_process: false,
+      canvas: false,
+    };
+
+    return config;
   },
   experimental: {
     optimizeCss: true,
