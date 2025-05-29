@@ -12,8 +12,9 @@
     "analyze": "ANALYZE=true next build",
     "analyze:server": "ANALYZE=true next build --debug",
     "analyze:build": "cross-env ANALYZE=true next build",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --runInBand --coverage"
   },
   "homepage": "https://hubdeseguros.github.io/v1",
   "dependencies": {
@@ -33,6 +34,7 @@
     "@swc/helpers": "^0.5.17",
     "@swc/jest": "^0.2.38",
     "@tailwindcss/forms": "^0.5.7",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -40,9 +42,11 @@
     "@types/node": "^20.17.52",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
     "critters": "^0.0.23",
     "eslint": "^8.55.0",
-    "eslint-config-next": "14.2.25",
+    "eslint-config-next": "^14.2.25",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",

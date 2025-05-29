@@ -1,4 +1,10 @@
-module.exports = {
+const nextJest = require('next/jest');
+
+const createJestConfig = nextJest({
+  dir: './',
+});
+
+const customJestConfig = {
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
   collectCoverage: true,
@@ -16,6 +22,17 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': ['@swc/jest']
   },
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
-  }
-}
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^@/pages/(.*)$': '<rootDir>/src/pages/$1',
+    '^@/styles/(.*)$': '<rootDir>/src/styles/$1',
+    '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@/types/(.*)$': '<rootDir>/src/types/$1',
+    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
+    '^@/contexts/(.*)$': '<rootDir>/src/contexts/$1',
+    '^@/services/(.*)$': '<rootDir>/src/services/$1',
+  },
+  testEnvironment: 'jest-environment-jsdom',
+};
+
+module.exports = createJestConfig(customJestConfig);
