@@ -4,6 +4,7 @@ import { useState, FormEvent, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'react-hot-toast';
 
 function LoginForm() {
   const [formData, setFormData] = useState({
@@ -13,13 +14,34 @@ function LoginForm() {
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
-  // Evitar hidratación no coincidente
+  // Verificar si Supabase está inicializado
   useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
+    const checkAuth = async () => {
+      try {
+        if (typeof supabase !== 'undefined') {
+          setIsInitialized(true);
+          // Verificar si ya hay una sesión activa
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            router.push('/dashboard');
+          }
+        }
+      } catch (error) {
+        console.error('Error al verificar la sesión:', error);
+      } finally {
+        setIsMounted(true);
+      }
+    };
+
+    checkAuth();
+    
+    return () => {
+      setIsMounted(false);
+    };
+  }, [router]);
 
   const validateForm = useCallback(() => {
     if (!formData.email.trim()) {
@@ -41,17 +63,25 @@ function LoginForm() {
     e.preventDefault();
     setFormError('');
     
+    if (!isMounted || !isInitialized) {
+      setFormError('El sistema está iniciando. Por favor, inténtalo de nuevo en unos segundos.');
+      return;
+    }
+    
     if (!validateForm()) return;
     
     try {
       setIsSubmitting(true);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email.trim(),
         password: formData.password,
       });
 
       if (error) throw error;
+      
+      // Mostrar notificación de éxito
+      toast.success('¡Inicio de sesión exitoso!');
       
       // Redirigir al dashboard después del inicio de sesión exitoso
       router.push('/dashboard');
@@ -60,13 +90,19 @@ function LoginForm() {
       console.error('Error en el inicio de sesión:', error);
       
       // Manejar errores específicos
+      let errorMessage = 'Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.';
+      
       if (error.message.includes('Invalid login credentials')) {
-        setFormError('Correo o contraseña incorrectos. Por favor, inténtalo de nuevo.');
+        errorMessage = 'Correo o contraseña incorrectos. Por favor, inténtalo de nuevo.';
       } else if (error.message.includes('Email not confirmed')) {
-        setFormError('Por favor verifica tu correo electrónico antes de iniciar sesión.');
-      } else {
-        setFormError('Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.');
+        errorMessage = 'Por favor verifica tu correo electrónico antes de iniciar sesión.';
+      } else if (error.message.includes('NetworkError')) {
+        errorMessage = 'Error de conexión. Por favor, verifica tu conexión a internet.';
       }
+      
+      setFormError(errorMessage);
+      toast.error(errorMessage);
+      
     } finally {
       if (isMounted) {
         setIsSubmitting(false);
@@ -83,6 +119,17 @@ function LoginForm() {
     // Limpiar el error cuando el usuario comienza a escribir
     if (formError) setFormError('');
   }, [formError]);
+
+  if (!isMounted || !isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Inicializando la aplicación...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md">

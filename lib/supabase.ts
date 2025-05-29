@@ -1,16 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Obtener variables de entorno
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vcoynbjctbfyavxnyhmp.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjb3luYmpjdGJmeWF2eG55aG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNzY4ODUsImV4cCI6MjA2Mzg1Mjg4NX0.q_5pNpcOSBpqjTkgIWoplGDc6LZlZIvTD3zeuR3lN2Q';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+// Obtener variables de entorno - No incluir valores por defecto en producción
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
-// Verificar configuración
-if (!supabaseUrl || !supabaseAnonKey) {
-  const errorMsg = 'Error: Falta la configuración de Supabase';
-  console.error(errorMsg);
-  throw new Error('Falta la configuración de Supabase. Por favor, verifica las variables de entorno.');
-}
+// Verificar configuración en tiempo de ejecución
+const checkConfig = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const errorMsg = 'Error: Falta la configuración de Supabase';
+    if (typeof window !== 'undefined') {
+      console.error(errorMsg);
+    }
+    return false;
+  }
+  return true;
+};
+
+// Inicializar solo si estamos en el cliente y la configuración es válida
+const isClient = typeof window !== 'undefined';
+const isConfigValid = checkConfig();
 
 // Opciones de configuración global
 const supabaseOptions = {
@@ -18,7 +27,8 @@ const supabaseOptions = {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce' as const, // Usar 'as const' para el tipo literal
+    flowType: 'pkce' as const,
+    debug: process.env.NODE_ENV === 'development',
   },
   global: {
     headers: {
@@ -27,18 +37,31 @@ const supabaseOptions = {
   },
 };
 
-// Crear cliente de Supabase para el lado del cliente
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
+// Inicialización condicional de clientes
+let supabase: ReturnType<typeof createClient>;
+let supabaseAdmin: ReturnType<typeof createClient>;
 
-// Crear cliente de administración para operaciones del lado del servidor
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  ...supabaseOptions,
-  auth: {
-    ...supabaseOptions.auth,
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+if (isClient && isConfigValid) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
+    
+    // Solo inicializar el cliente de administración si tenemos la clave de servicio
+    if (supabaseServiceKey) {
+      supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+        ...supabaseOptions,
+        auth: {
+          ...supabaseOptions.auth,
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Error al inicializar Supabase:', error);
+  }
+}
+
+export { supabase, supabaseAdmin };
 
 // Función para obtener el cliente de Supabase en el cliente
 export const getSupabaseClient = () => {
