@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production'
-const isGHPages = process.env.GITHUB_ACTIONS === 'true'
+const isGHPages = process.env.GITHUB_ACTIONS === 'true' || process.env.GITHUB_ACTIONS === true
 const repo = 'v1'
+const basePath = isGHPages || isProd ? `/${repo}` : ''
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -9,9 +10,10 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   // Configuración para GitHub Pages
-  basePath: isGHPages || isProd ? `/${repo}` : '',
-  assetPrefix: isGHPages || isProd ? `/${repo}/` : '',
+  basePath: basePath,
+  assetPrefix: basePath ? `${basePath}/` : '',
   output: 'export',
+  trailingSlash: true,
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
@@ -26,7 +28,7 @@ const nextConfig = {
     removeConsole: isProd
   },
   env: {
-    NEXT_PUBLIC_BASE_PATH: isGHPages || isProd ? `/${repo}` : ''
+    NEXT_PUBLIC_BASE_PATH: basePath
   },
   webpack: (config, { isServer }) => {
     // Configuración de webpack para ignorar módulos problemáticos

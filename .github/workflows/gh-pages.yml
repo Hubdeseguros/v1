@@ -10,25 +10,55 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    
+    - name: Checkout code
+      run: |
+        # Configurar git
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        
+        # Clonar el repositorio
+        git clone https://github.com/Hubdeseguros/v1.git .
+        
     - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    
+      run: |
+        # Instalar Node.js 16
+        curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+        
     - name: Install dependencies
-      run: npm ci
-    
+      run: |
+        npm ci --prefer-offline
+        
     - name: Build
       run: |
+        echo "Building the application..."
         npm run build
+        ls -la out/
         touch out/.nojekyll
-    
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.5.0
-      with:
-        folder: out
-        branch: gh-pages
-        clean: true
+        
+    - name: Deploy
+      run: |
+        # Instalar Git LFS si es necesario
+        sudo apt-get update
+        sudo apt-get install -y git-lfs
+        
+        # Configurar el token de acceso
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Hubdeseguros/v1.git
+        
+        # Configurar la rama gh-pages
+        git checkout --orphan gh-pages || git checkout gh-pages
+        
+        # Limpiar el directorio excepto .git
+        find . -maxdepth 1 ! -name 'out' ! -name '.git' ! -name '.gitignore' -exec rm -rf {} +
+        
+        # Mover los archivos construidos al directorio raíz
+        cp -a out/. .
+        
+        # Asegurar que el archivo .nojekyll esté presente
+        touch .nojekyll
+        
+        # Hacer commit y push de los cambios
+        git add .
+        git status
+        git commit -m "Deploy to GitHub Pages"
+        git push -f origin gh-pages

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export -o out && touch out/.nojekyll",
+    "build": "next build && next export -o out",
     "start": "next start",
     "lint": "next lint",
     "export": "next export -o out",
@@ -25,6 +25,8 @@
     "@types/next": "^8.0.7",
     "autoprefixer": "^10.4.16",
     "next": "^14.2.29",
+    "next-compose-plugins": "^2.2.1",
+    "next-transpile-modules": "^10.0.1",
     "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
