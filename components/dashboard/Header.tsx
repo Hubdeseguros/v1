@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { FiBell, FiSearch, FiUser, FiSettings, FiHelpCircle, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   role?: 'ADMIN' | 'AGENCIA' | 'PROMOTOR' | 'CLIENTE';
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export default function Header({ role = 'AGENCIA' }: HeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { signOut } = useAuth();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
   const toggleProfile = () => {
@@ -171,13 +173,20 @@ export default function Header({ role = 'AGENCIA' }: HeaderProps) {
                 Ayuda
               </a>
               <div className="border-t border-gray-100"></div>
-              <a
-                href="/login"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  try {
+                    await signOut();
+                  } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                  }
+                }}
+                className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 <FiLogOut className="mr-3 h-4 w-4 text-gray-500" />
                 Cerrar sesión
-              </a>
+              </button>
             </div>
           </div>
         )}

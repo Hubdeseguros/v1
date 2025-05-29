@@ -249,7 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 1. Limpiar el estado local primero para una respuesta más rápida
       setUser(null);
       
-      // 2. Limpiar almacenamiento local antes de redirigir
+      // 2. Limpiar almacenamiento local
       if (typeof window !== 'undefined') {
         // Limpiar localStorage y sessionStorage
         localStorage.clear();
@@ -262,16 +262,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
       
-      // 3. Intentar cerrar sesión en Supabase (sin esperar la respuesta)
-      supabase.auth.signOut().catch(error => {
+      // 3. Cerrar sesión en Supabase
+      await supabase.auth.signOut().catch(error => {
         console.error('Error al cerrar sesión en Supabase:', error);
       });
       
-      // 4. Redirigir a la página de login en el dominio especificado
+      // 4. Redirigir a la página de login
       if (typeof window !== 'undefined') {
-        // Usar el router de Next.js para la navegación inicial
-        router.push('https://hubdeseguros.github.io/v1/login/');
-        // Forzar recarga para limpiar el estado de la aplicación y asegurar la redirección
+        // Usar solo window.location.href para asegurar la redirección
         window.location.href = 'https://hubdeseguros.github.io/v1/login/';
       }
       
