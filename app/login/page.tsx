@@ -3,7 +3,7 @@
 import { useState, FormEvent, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 
 function LoginForm() {
@@ -21,16 +21,28 @@ function LoginForm() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        if (typeof supabase !== 'undefined') {
-          setIsInitialized(true);
-          // Verificar si ya hay una sesión activa
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            router.push('/dashboard');
-          }
+        const client = getSupabaseClient();
+        if (!client) {
+          throw new Error('No se pudo inicializar el cliente de Supabase');
         }
+
+        setIsInitialized(true);
+        
+        // Verificar si ya hay una sesión activa
+        const { data: { session }, error } = await client.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (session) {
+          router.push('/dashboard');
+          return;
+        }
+        
       } catch (error) {
         console.error('Error al verificar la sesión:', error);
+        setFormError('Error al conectar con el servidor. Por favor, recarga la página.');
       } finally {
         setIsMounted(true);
       }
@@ -73,7 +85,12 @@ function LoginForm() {
     try {
       setIsSubmitting(true);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const client = getSupabaseClient();
+      if (!client) {
+        throw new Error('No se pudo inicializar el cliente de autenticación');
+      }
+      
+      const { data, error } = await client.auth.signInWithPassword({
         email: formData.email.trim(),
         password: formData.password,
       });
@@ -92,12 +109,14 @@ function LoginForm() {
       // Manejar errores específicos
       let errorMessage = 'Error al iniciar sesión. Por favor, inténtalo de nuevo más tarde.';
       
-      if (error.message.includes('Invalid login credentials')) {
+      if (error?.message?.includes('Invalid login credentials')) {
         errorMessage = 'Correo o contraseña incorrectos. Por favor, inténtalo de nuevo.';
-      } else if (error.message.includes('Email not confirmed')) {
+      } else if (error?.message?.includes('Email not confirmed')) {
         errorMessage = 'Por favor verifica tu correo electrónico antes de iniciar sesión.';
-      } else if (error.message.includes('NetworkError')) {
+      } else if (error?.message?.includes('NetworkError')) {
         errorMessage = 'Error de conexión. Por favor, verifica tu conexión a internet.';
+      } else if (error?.message?.includes('Failed to fetch')) {
+        errorMessage = 'No se pudo conectar al servidor. Por favor, verifica tu conexión.';
       }
       
       setFormError(errorMessage);

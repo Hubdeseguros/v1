@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Obtener variables de entorno - No incluir valores por defecto en producción
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 // Verificar configuración en tiempo de ejecución
 const checkConfig = () => {
@@ -37,48 +37,47 @@ const supabaseOptions = {
   },
 };
 
-// Inicialización condicional de clientes
-let supabase: ReturnType<typeof createClient>;
-let supabaseAdmin: ReturnType<typeof createClient>;
-
-if (isClient && isConfigValid) {
+// Inicialización segura de clientes
+const createSupabaseClient = () => {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
-    
-    // Solo inicializar el cliente de administración si tenemos la clave de servicio
-    if (supabaseServiceKey) {
-      supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-        ...supabaseOptions,
-        auth: {
-          ...supabaseOptions.auth,
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      });
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Faltan las credenciales de Supabase');
+      return null;
     }
+    return createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
   } catch (error) {
-    console.error('Error al inicializar Supabase:', error);
+    console.error('Error al crear cliente Supabase:', error);
+    return null;
   }
-}
-
-export { supabase, supabaseAdmin };
-
-// Función para obtener el cliente de Supabase en el cliente
-export const getSupabaseClient = () => {
-  return createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
 };
 
-// Función para obtener el cliente de administración
-export const getSupabaseAdmin = () => {
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    ...supabaseOptions,
-    auth: {
-      ...supabaseOptions.auth,
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+const createSupabaseAdmin = () => {
+  try {
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Falta la clave de servicio de Supabase');
+      return null;
+    }
+    return createClient(supabaseUrl, supabaseServiceKey, {
+      ...supabaseOptions,
+      auth: {
+        ...supabaseOptions.auth,
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  } catch (error) {
+    console.error('Error al crear cliente de administración Supabase:', error);
+    return null;
+  }
 };
+
+// Exportar funciones de creación
+export const getSupabaseClient = createSupabaseClient;
+export const getSupabaseAdmin = createSupabaseAdmin;
+
+// Exportar instancias para compatibilidad
+export const supabase = createSupabaseClient();
+export const supabaseAdmin = createSupabaseAdmin();
 
 // Exportar configuración para pruebas
 export const config = {
@@ -91,18 +90,41 @@ export const config = {
 // Función para inicializar la base de datos
 const initializeDatabase = async () => {
   try {
-    // Verificar si la tabla de perfiles existe
-    const { error } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .limit(1);
-      
-    if (error) {
-      console.warn('La tabla de perfiles no existe. Creando...');
-      // Aquí podrías ejecutar la migración SQL para crear la tabla
+    const adminClient = getSupabaseAdmin();
+    if (!adminClient) {
+      console.error('No se pudo inicializar el cliente de administración');
+      return;
     }
-  } catch (err) {
-    console.error('Error al inicializar la base de datos:', err);
+
+    // Verificar si el usuario admin@admin.com existe
+    const { data: users, error } = await adminClient
+      .from('users')
+      .select('*')
+      .eq('email', 'admin@admin.com');
+
+    if (error) {
+      console.error('Error al verificar usuario admin:', error);
+      return;
+    }
+
+    // Si no existe el usuario admin, crearlo
+    if (!users || users.length === 0) {
+      const { data, error: createError } = await adminClient.auth.admin.createUser({
+        email: 'admin@admin.com',
+        password: 'admin123',
+        email_confirm: true,
+        user_metadata: { name: 'Admin' }
+      });
+
+      if (createError) {
+        console.error('Error al crear usuario admin:', createError);
+        return;
+      }
+      
+      console.log('Usuario admin creado exitosamente');
+    }
+  } catch (error) {
+    console.error('Error en initializeDatabase:', error);
   }
 };
 
