@@ -10,7 +10,8 @@ export default function Registro() {
     nombre: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    terms: false
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +21,10 @@ export default function Registro() {
   const validateForm = useCallback(() => {
     if (!formData.nombre.trim()) {
       setError('El nombre es obligatorio');
+      return false;
+    }
+    if (!/^[A-Za-z\sñÑáéíóúÁÉÍÓÚ]+$/i.test(formData.nombre)) {
+      setError('El nombre debe contener solo letras y espacios');
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -56,6 +61,12 @@ export default function Registro() {
     try {
       setIsSubmitting(true);
       
+      // Validar términos y condiciones
+      if (!formData.terms) {
+        setError('Debes aceptar los términos y condiciones');
+        return;
+      }
+
       // Registrar el usuario en Supabase Auth
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -68,18 +79,24 @@ export default function Registro() {
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message.includes('User already registered')) {
+          setError('Este correo electrónico ya está registrado. Por favor inicia sesión o utiliza otro correo.');
+        } else if (signUpError.message.includes('Email already exists')) {
+          setError('Este correo electrónico ya está en uso. Por favor utiliza otro correo.');
+        } else {
+          setError('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+          console.error('Error en el registro:', signUpError);
+        }
+        return;
+      }
       
       // Redirigir a la página de verificación
       router.push('/verificar-email');
       
     } catch (error: any) {
       console.error('Error en el registro:', error);
-      setError(
-        error.message.includes('User already registered') 
-          ? 'Este correo electrónico ya está registrado. Por favor inicia sesión o utiliza otro correo.'
-          : 'Error al registrar el usuario. Por favor, inténtalo de nuevo.'
-      );
+      setError('Error inesperado. Por favor, inténtalo de nuevo.');
     } finally {
       setIsSubmitting(false);
     }

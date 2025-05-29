@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getSupabaseClient } from '@/lib/supabase';
+
+const supabase = getSupabaseClient();
 
 export default function RecuperarPassword() {
   const [email, setEmail] = useState('');
@@ -14,12 +17,35 @@ export default function RecuperarPassword() {
     setMessage('');
     
     try {
-      // Aquí iría la lógica para enviar el correo de recuperación
-      // Por ahora simulamos un envío exitoso
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Validar formato de correo
+      if (!email.trim()) {
+        setMessage('Por favor ingresa tu correo electrónico');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setMessage('Por favor ingresa un correo electrónico válido');
+        return;
+      }
+
+      // Implementar la lógica real de recuperación
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback`
+      });
+
+      if (error) {
+        if (error.message.includes('Email not found')) {
+          setMessage('No existe una cuenta con este correo electrónico.');
+        } else {
+          setMessage('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo.');
+          console.error('Error al recuperar contraseña:', error);
+        }
+        return;
+      }
+
       setMessage('Si existe una cuenta con este correo, recibirás un enlace para restablecer tu contraseña.');
     } catch (error) {
-      setMessage('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo.');
+      console.error('Error inesperado:', error);
+      setMessage('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
